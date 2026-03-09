@@ -4,169 +4,193 @@ title: Build
 permalink: /build/
 ---
 
-To build GTSAM from source, clone or download the latest release from the [GTSAM Github repo](https://github.com/borglab/gtsam). Then follow the build & install instructions below.
+To build GTSAM from source, clone or download the latest release from the [GTSAM GitHub repository](https://github.com/borglab/gtsam). This page folds in the most useful material from the stalled docs refresh while keeping the current site structure.
 
-{% include quick_start_module.md %}
+## Quick Start
 
-## Important Installation Notes
-
-1. GTSAM requires the following libraries to be installed on your system:
-    - BOOST version 1.43 or greater (install through Linux repositories or MacPorts)
-    - Cmake version 3.0 or higher
-    - Support for XCode 4.3 command line tools on Mac requires CMake 2.8.8 or higher
-
-    - Optional dependent libraries:
-      - If TBB is installed and detectable by CMake GTSAM will use it automatically. Ensure that CMake prints "Use Intel TBB : Yes". To disable the use of TBB,
-      disable the CMake flag GTSAM_WITH_TBB (enabled by default). On Ubuntu, TBB may be installed from the Ubuntu repositories, and for other platforms it
-      may be downloaded from [here](https://www.threadingbuildingblocks.org/).
-      - GTSAM may be configured to use MKL by toggling `GTSAM_WITH_EIGEN_MKL` and `GTSAM_WITH_EIGEN_MKL_OPENMP` to `ON`.
-      However, best performance is usually achieved with MKL disabled. We therefore advise you to benchmark your problem before using MKL.
-
-1. Configurations
-    - Tested compilers:
-      - GCC 4.2-7.3
-      - OS X Clang 2.9-10.0
-      - OS X GCC 4.2
-      - MSVC 2017
-    - Tested systems:
-      - Ubuntu 16.04 - 18.04
-      - MacOS 10.6 - 10.14
-      - Windows 7, 8, 8.1, 10
-
-1. GTSAM makes extensive use of debug assertions, and we highly recommend you work in Debug mode while developing (not enabled by default). Likewise, it is imperative that you switch to release mode when running finished code and for timing. GTSAM will run up to 10x faster in Release mode! See the end of this document for
-additional debugging tips.
-
-1. GTSAM has [Doxygen](http://www.doxygen.nl/) documentation. To generate, run `make doc` from your build directory, or refer to the [statically generated version on this website](/doxygen).
-
-1. The instructions below install the library to the default system install path and build all components. From a terminal, starting in the root library folder, execute the commands below for an out-of-source build. This will build the library and unit tests, run all of the unit tests, and then install the library itself.
+From the repository root, use an out-of-source build:
 
 ```sh
-  $ mkdir build
-  $ cd build
-  $ cmake ..
-  $ make check (optional, runs unit tests)
-  $ make install
-  ```
-
-## CMake Configuration Options and Details
-
-GTSAM has a number of options that can be configured, which is best done with
-one of the following:
-
-  - `ccmake`:      the curses GUI for cmake
-  - `cmake-gui`:   a real GUI for cmake
-
-## Important Options:
-
-#### CMAKE_BUILD_TYPE
-
-We support several build configurations for GTSAM (case insensitive)
-
-`` `cmake -DCMAKE_BUILD_TYPE=[Option] ..` ``
-- `Debug`: All error checking options on, no optimization. Use for development of new features and fixing issues.
-- `Release`: Optimizations turned on, no debug symbols.
-- `Timing`: Adds ENABLE_TIMING flag to provide statistics on operation
-- `Profiling`: Standard configuration for use during profiling
-- `RelWithDebInfo`: Same as Release, but with the - g flag
-for debug symbols
-
-#### CMAKE_INSTALL_PREFIX
-
-The install folder.The
-default is typically `/usr/local/` .
-To configure to install to your home directory, you could execute:
-`` `cmake -DCMAKE_INSTALL_PREFIX:PATH=$HOME ..` ``
-
-#### GTSAM_TOOLBOX_INSTALL_PATH
-
-The Matlab toolbox will be installed in a subdirectory of this folder, called 'gtsam'.
-```
-cmake -DGTSAM_TOOLBOX_INSTALL_PATH:PATH=$HOME/toolbox ..
+mkdir build
+cd build
+cmake ..
+make check
+make install
 ```
 
-#### GTSAM_BUILD_CONVENIENCE_LIBRARIES
+`make check` is optional, but recommended when you are validating a local build.
 
-This is a build option to allow for tests in subfolders to be linked against convenience libraries rather than the full libgtsam.
-Set with the command line as follows:
-```
-cmake -DGTSAM_BUILD_CONVENIENCE_LIBRARIES:OPTION=ON ..
-```
-  - `ON` (Default): This builds convenience libraries and links tests against them.This option is suggested for gtsam developers, as it is possible to build and run tests without first building the rest of the library, and speeds up compilation for a single test.The downside of this option is that it will build the entire library again to build the full libgtsam library, so build / install will be slower.
-  - `OFF`: This will build all of libgtsam before any of the tests, and then link all of the tests at once.This option is best
-  for users of GTSAM, as it avoids rebuilding the entirety of gtsam an extra time.
+## Supported Configurations
 
-#### GTSAM_BUILD_UNSTABLE
+| Tested operating systems | Tested compilers |
+| --- | --- |
+| Ubuntu 16.04 - 18.04 | GCC 4.2 - 7.3 |
+| macOS 10.6 - 10.14, 15.2 - 15.3 | OS X Clang 2.9 - 10.0 |
+| Windows 7, 8, 8.1, 10 | OS X GCC 4.2 |
+|  | MSVC 2017 |
 
-  Enable build and install for libgtsam_unstable library.
-  Set with the command line as follows:
-```
-cmake -DGTSAM_BUILD_UNSTABLE:OPTION=ON ..
-```
-- `ON` (Default): When enabled, libgtsam_unstable will be built and installed with the same options as libgtsam.In addition, if tests are enabled, the unit tests will be built as well.The Matlab toolbox will also be generated
-if the matlab toolbox is enabled, installing into a folder called `gtsam_unstable`.
-- OFF: If disabled, no `gtsam_unstable` code will be included in build or install.
+## Required Dependencies
 
+Install these first:
 
-#### MEX_COMMAND
-Path to the mex compiler. Defaults to assume the path is included in your shell 's PATH environment variable. mex is installed with matlab at `$MATLABROOT/bin/mex`. The correct value for  `MATLABROOT` can be found by executing the command `matlabroot` in MATLAB
+1. [Boost](https://www.boost.org/users/download/) 1.43 or newer
+2. [CMake](https://cmake.org/download/) 3.0 or newer
 
-## Running the unit tests
+On macOS, support for Xcode 4.3 command line tools requires CMake 2.8.8 or newer.
 
- `make check` will build and run all of the tests.Note that the tests will only be built when using the "check" targets, to prevent `make install` from building the tests unnecessarily.
+## Optional Dependencies
 
-You can also run `make timing` to build all of the timing scripts.
-To run check on a particular module only, run `make check.[subfolder]` , so to run just the geometry tests, run `make check.geometry` .
+### Intel TBB
 
-Individual tests can be run by appending `.run` to the name of the test,
-for example, to run testMatrix, run `make testMatrix.run` .
+If TBB is installed and detectable by CMake, GTSAM will use it automatically. Confirm that CMake prints `Use Intel TBB : Yes`.
 
-## Performance
+- Disable it with `GTSAM_WITH_TBB=OFF`.
+- On Ubuntu, install it from the package manager.
+- On other platforms, see [oneTBB](https://github.com/uxlfoundation/oneTBB).
 
-Here are some tips to get the best possible performance out of GTSAM.
+### Intel MKL
 
-1. Build in `Release` mode. GTSAM will run up to 10 x faster compared to `Debug`
-mode.
+GTSAM can be configured to use MKL with `GTSAM_WITH_EIGEN_MKL` and `GTSAM_WITH_EIGEN_MKL_OPENMP`, but it does not always improve performance. Benchmark your workload before enabling it.
 
-2. Enable TBB.On modern processors with multiple cores, this can easily speed up optimization by 30 - 50 %. Please note that this may not be true
-for very small problems where the overhead of dispatching work to multiple threads outweighs the benefit.We recommend that you benchmark your problem with / without TBB.
-
-3. Add `-march=native` to `GTSAM_CMAKE_CXX_FLAGS`. A performance gain of
-    25 - 30 % can be expected on modern processors.Note that this affects the portability of your executable. It may not run when copied to another system with older / different processor architecture. Also note that all dependent projects * must * be compiled with the same flag, or segfaults and other undefined behavior may result.
-
-4. Possibly enable MKL. Please note that our benchmarks have shown that this helps only in very limited cases, and actually hurts performance in the usual case. We therefore recommend that you do *not * enable MKL, unless you have benchmarked it on your problem and have verified that it improves performance.
-
-## Debugging tips
-
-Another useful debugging symbol is _GLIBCXX_DEBUG, which enables debug checks and safe containers in the standard C++library and makes problems much easier to find.
-
-NOTE: The native Snow Leopard g++compiler / library contains a bug that makes it impossible to use _GLIBCXX_DEBUG.MacPorts g++compilers do work with it though.
-
-    NOTE: If _GLIBCXX_DEBUG is used to compile gtsam, anything that links against gtsam will need to be compiled with _GLIBCXX_DEBUG as well, due to the use of header - only Eigen.
-
-## Installing MKL on Linux
-
-Intel has a guide
-for installing MKL on Linux through APT repositories [here](https://software.intel.com/en-us/articles/installing-intel-free-libs-and-python-apt-repo).
-
-After following the instructions, add the following to your `~/.bashrc` (and afterwards, open a new terminal before compiling GTSAM):
- `LD_PRELOAD`
-need only be set if you are building the cython wrapper to use GTSAM from python.
+To use MKL on Linux, Intel provides installation guidance through its package repositories. If you are building the Python wrapper, you may also need:
 
 ```sh
 source /opt/intel/mkl/bin/mklvars.sh intel64
 export LD_PRELOAD="$LD_PRELOAD:/opt/intel/mkl/lib/intel64/libmkl_core.so:/opt/intel/mkl/lib/intel64/libmkl_sequential.so"
 ```
 
-To use MKL in GTSAM pass the flag `-DGTSAM_WITH_EIGEN_MKL=ON` to cmake.
+Then pass:
 
-The `LD_PRELOAD` fix seems to be related to a well known problem with MKL which leads to lots of undefined symbol errors, for example:
+```sh
+cmake -DGTSAM_WITH_EIGEN_MKL=ON ..
+```
 
-- <https://software.intel.com/en-us/forums/intel-math-kernel-library/topic/300857>
-- <https://software.intel.com/en-us/forums/intel-distribution-for-python/topic/628976>
-- <https://groups.google.com/a/continuum.io/forum/#!topic/anaconda/J3YGoef64z8>
+## Ubuntu Packages
 
-Failing to specify `LD_PRELOAD` may lead to errors such as:
- `ImportError: /opt/intel/mkl/lib/intel64/libmkl_vml_avx2.so: undefined symbol: mkl_serv_getenv`
-or
- `Intel MKL FATAL ERROR: Cannot load libmkl_avx2.so or libmkl_def.so.`
-when importing GTSAM using the cython wrapper in python.
+Install the basic dependencies with:
+
+```sh
+sudo apt-get install libboost-all-dev
+sudo apt-get install cmake
+```
+
+Optional packages:
+
+- TBB: `sudo apt-get install libtbb-dev`
+- MKL: install through Intel's APT repositories if needed
+
+## Ubuntu PPA Packages
+
+GTSAM is also available through the [BorgLab Launchpad PPAs](https://launchpad.net/~borglab).
+
+Latest 4.x stable release:
+
+```sh
+sudo add-apt-repository ppa:borglab/gtsam-release-4.0
+sudo apt update
+sudo apt install libgtsam-dev libgtsam-unstable-dev
+```
+
+Nightly builds:
+
+```sh
+sudo add-apt-repository ppa:borglab/gtsam-develop
+sudo apt update
+sudo apt install libgtsam-dev libgtsam-unstable-dev
+```
+
+## Arch Linux
+
+GTSAM is also available in the [AUR](https://aur.archlinux.org/packages/gtsam/).
+
+```sh
+yay -S gtsam
+```
+
+For Intel-accelerated builds:
+
+```sh
+yay -S gtsam-mkl
+```
+
+## Running Tests
+
+`make check` builds and runs all tests. Tests are only built for the `check` targets so that `make install` does not build them unnecessarily.
+
+Examples:
+
+- Run all tests: `make check`
+- Run one module: `make check.geometry`
+- Run one test: `make testMatrix.run`
+- Build timing targets: `make timing`
+
+## Important CMake Options
+
+### `CMAKE_BUILD_TYPE`
+
+```sh
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+```
+
+Supported values:
+
+- `Debug`: full error checking, no optimization
+- `Release`: optimized, no debug symbols
+- `Timing`: enables timing statistics
+- `Profiling`: intended for profiling runs
+- `RelWithDebInfo`: release build with debug symbols
+
+### `CMAKE_INSTALL_PREFIX`
+
+Set the install location:
+
+```sh
+cmake -DCMAKE_INSTALL_PREFIX:PATH=$HOME ..
+```
+
+### `GTSAM_TOOLBOX_INSTALL_PATH`
+
+Set the MATLAB toolbox install path:
+
+```sh
+cmake -DGTSAM_TOOLBOX_INSTALL_PATH:PATH=$HOME/toolbox ..
+```
+
+### `GTSAM_BUILD_CONVENIENCE_LIBRARIES`
+
+```sh
+cmake -DGTSAM_BUILD_CONVENIENCE_LIBRARIES:OPTION=ON ..
+```
+
+- `ON` (default): faster for developers iterating on tests
+- `OFF`: avoids rebuilding the full library twice, better for most users
+
+### `GTSAM_BUILD_UNSTABLE`
+
+```sh
+cmake -DGTSAM_BUILD_UNSTABLE:OPTION=ON ..
+```
+
+- `ON` (default): builds and installs `libgtsam_unstable`
+- `OFF`: excludes unstable code from build and install
+
+### `MEX_COMMAND`
+
+Path to the MATLAB `mex` compiler. If `mex` is not already in `PATH`, point it at `$MATLABROOT/bin/mex`.
+
+## Debugging Tips
+
+GTSAM makes extensive use of debug assertions, so development work should usually happen in `Debug` mode. Switch back to `Release` when benchmarking or running finished code.
+
+Another useful option is `_GLIBCXX_DEBUG`, which enables additional standard library checks. If you use it to compile GTSAM, anything linking against GTSAM must also use it.
+
+## Performance Tips
+
+1. Use `Release` mode for production workloads.
+2. Enable TBB on multi-core systems and benchmark with and without it.
+3. Consider `-march=native` in `GTSAM_CMAKE_CXX_FLAGS` if portability is not a concern.
+4. Only enable MKL if you have measured a real benefit.
+
+## API Documentation
+
+For API documentation, see the [generated Doxygen site](/doxygen/).

@@ -4,34 +4,23 @@ title: Docs
 permalink: /docs/
 ---
 
-For a a quick introduction see the tutorial on [Factor Graphs and GTSAM: A Hands-on Introduction](/tutorials/intro.html).
+For a hands-on mathematical introduction, start with [Factor Graphs and GTSAM: A Hands-on Introduction](/tutorials/intro.html).
 
-A more thorough introduction to the use of factor graphs in robotics is the 2017 article [Factor graphs for robot perception](https://www.cc.gatech.edu/~dellaert/pubs/Dellaert17fnt.pdf) by Frank Dellaert and Michael Kaess.
+For a broader treatment of factor graphs in robotics, see [Factor graphs for robot perception](https://www.cs.cmu.edu/~kaess/pub/Dellaert17fnt.pdf) by Frank Dellaert and Michael Kaess.
 
-### API and Wrapper Documentation
+## API and Wrapper Documentation
 
-Currently, detailed API documentation is available only for C++ via the [C++ Doxygen generated site](/doxygen/).
+Detailed API documentation is currently available for C++ through the [generated Doxygen site](/doxygen/).
 
-GTSAM comes with a python wrapper (see cython directory) and a matlab wrapper (see matlab directory), and for prototyping with GTSAM we highly recommend using one of the above. The auto-generated API documentation for python/MATLAB is limited to the number and type of input arguments, and again the [doxygen docs](/doxygen/) provide the details.
+GTSAM also ships with Python and MATLAB wrappers. The wrapper API pages are limited compared to the C++ docs, so the Doxygen site is still the best reference for detailed behavior.
 
-### Notes on GTSAM
+## Notes on GTSAM
 
-{% for note in site.notes %}
-#### [{{ note.title }}]({{ note.url | prepend: site.baseurl }})
-{% endfor %}
+- [GTSAM Concepts](/notes/gtsam-concepts/): manifolds, groups, Lie groups, vector spaces, and traits
+- [The Preintegrated IMU Factor](/notes/imu-factor/): overview of GTSAM's IMU handling scheme
+- [Migrating from GTSAM 3](/notes/migrating-from-3/): highlights of the major GTSAM 4 changes
+- [Contributing to GTSAM](/notes/contributing/): contribution workflow, review expectations, and coding conventions
 
-### Additional Information
+## Additional Information
 
-There is a [`GTSAM users Google group`](https://groups.google.com/forum/#!forum/gtsam-users) for general discussion.
-
-<!-- Read about important [`GTSAM-Concepts`](GTSAM-Concepts.md) here. A primer on GTSAM Expressions,
-which support (superfast) automatic differentiation,
-can be found on the [GTSAM wiki on BitBucket](https://bitbucket.org/gtborg/gtsam/wiki/Home).
-
-See the [`INSTALL`](INSTALL.md) file for more detailed installation instructions.
-
-GTSAM is open source under the BSD license, see the [`LICENSE`](LICENSE) and [`LICENSE.BSD`](LICENSE.BSD) files.
-
-Please see the [`examples/`](examples) directory and the [`USAGE`](USAGE.md) file for examples on how to use GTSAM.
-
-GTSAM was developed in the lab of [Frank Dellaert](https://dellaert.github.io) at the [Georgia Institute of Technology](http://www.gatech.edu), with the help of many contributors over the years, see [THANKS](THANKS). -->
+There is a [GTSAM users Google group](https://groups.google.com/g/gtsam-users) for general discussion.
