@@ -4,39 +4,55 @@ title: Build
 permalink: /build/
 ---
 
-To build GTSAM from source, clone or download the latest release from the [GTSAM GitHub repository](https://github.com/borglab/gtsam). This page folds in the most useful material from the stalled docs refresh while keeping the current site structure.
+To build GTSAM from source, clone or download the latest release from the [GTSAM GitHub repository](https://github.com/borglab/gtsam). The current stable release is 4.2, while the main development line is in pre-4.3 mode.
 
 ## Quick Start
 
 From the repository root, use an out-of-source build:
 
 ```sh
-mkdir build
-cd build
-cmake ..
-make check
-make install
+cmake -S . -B build
+cmake --build build --target check
+cmake --build build --target install
 ```
 
-`make check` is optional, but recommended when you are validating a local build.
+`check` is optional, but recommended when you are validating a local build.
 
 ## Supported Configurations
 
-| Tested operating systems | Tested compilers |
+| Current baseline guidance | Minimum recommendation |
 | --- | --- |
-| Ubuntu 16.04 - 18.04 | GCC 4.2 - 7.3 |
-| macOS 10.6 - 10.14, 15.2 - 15.3 | OS X Clang 2.9 - 10.0 |
-| Windows 7, 8, 8.1, 10 | OS X GCC 4.2 |
-|  | MSVC 2017 |
+| Linux | clang-11 or gcc-9 |
+| macOS | Xcode 14.2 or newer |
+| Windows | MSVC 14.2 or newer |
 
 ## Required Dependencies
 
 Install these first:
 
-1. [Boost](https://www.boost.org/users/download/) 1.43 or newer
-2. [CMake](https://cmake.org/download/) 3.0 or newer
+1. [CMake](https://cmake.org/download/) 3.10 or newer
+2. A current C++ toolchain for your platform
 
-On macOS, support for Xcode 4.3 command line tools requires CMake 2.8.8 or newer.
+Ubuntu package:
+
+```sh
+sudo apt-get install cmake
+```
+
+## Optional Boost Dependency
+
+Boost is now optional. Two CMake flags govern its use:
+
+- `GTSAM_USE_BOOST_FEATURES`
+- `GTSAM_ENABLE_BOOST_SERIALIZATION`
+
+If either of those is `ON`, install [Boost](https://www.boost.org/users/download/) 1.70 or newer.
+
+Platform-specific guidance:
+
+- macOS: `brew install boost`
+- Ubuntu: `sudo apt-get install libboost-all-dev`
+- Windows: prefer [vcpkg](https://github.com/microsoft/vcpkg)
 
 ## Optional Dependencies
 
@@ -45,7 +61,7 @@ On macOS, support for Xcode 4.3 command line tools requires CMake 2.8.8 or newer
 If TBB is installed and detectable by CMake, GTSAM will use it automatically. Confirm that CMake prints `Use Intel TBB : Yes`.
 
 - Disable it with `GTSAM_WITH_TBB=OFF`.
-- On Ubuntu, install it from the package manager.
+- On Ubuntu, install it with `sudo apt-get install libtbb-dev`.
 - On other platforms, see [oneTBB](https://github.com/uxlfoundation/oneTBB).
 
 ### Intel MKL
@@ -65,39 +81,14 @@ Then pass:
 cmake -DGTSAM_WITH_EIGEN_MKL=ON ..
 ```
 
-## Ubuntu Packages
+## Ubuntu Packages and PPAs
 
-Install the basic dependencies with:
+Ubuntu users can either build from source or use the BorgLab Launchpad archives:
 
-```sh
-sudo apt-get install libboost-all-dev
-sudo apt-get install cmake
-```
+- [BorgLab Launchpad PPAs](https://launchpad.net/~borglab)
+- [Nightly develop PPA](https://launchpad.net/~borglab/+archive/ubuntu/gtsam-develop)
 
-Optional packages:
-
-- TBB: `sudo apt-get install libtbb-dev`
-- MKL: install through Intel's APT repositories if needed
-
-## Ubuntu PPA Packages
-
-GTSAM is also available through the [BorgLab Launchpad PPAs](https://launchpad.net/~borglab).
-
-Latest 4.x stable release:
-
-```sh
-sudo add-apt-repository ppa:borglab/gtsam-release-4.0
-sudo apt update
-sudo apt install libgtsam-dev libgtsam-unstable-dev
-```
-
-Nightly builds:
-
-```sh
-sudo add-apt-repository ppa:borglab/gtsam-develop
-sudo apt update
-sudo apt install libgtsam-dev libgtsam-unstable-dev
-```
+PPAs are convenient, but they may lag the main repository or carry different package variants depending on the Ubuntu series. For the most current build options, source builds are the safest path.
 
 ## Arch Linux
 
@@ -115,14 +106,31 @@ yay -S gtsam-mkl
 
 ## Running Tests
 
-`make check` builds and runs all tests. Tests are only built for the `check` targets so that `make install` does not build them unnecessarily.
+`check` builds and runs all tests. Tests are only built for the `check` targets so that `install` does not build them unnecessarily.
 
 Examples:
 
-- Run all tests: `make check`
-- Run one module: `make check.geometry`
-- Run one test: `make testMatrix.run`
-- Build timing targets: `make timing`
+- Configure first: `cmake -S . -B build`
+- Run all tests: `cmake --build build --target check`
+- Build timing targets: `cmake --build build --target timing`
+
+If you are working directly with the generated Makefiles, the classic targets still work:
+
+- `make check`
+- `make check.geometry`
+- `make testMatrix.run`
+
+## Windows Notes
+
+On Windows, the preferred modern route is CMake with Ninja from a Developer shell:
+
+```powershell
+cmake -S . -B build -G Ninja
+cmake --build build --target check
+cmake --build build --target install
+```
+
+Visual Studio builds are also supported, but require a recent Visual Studio installation with C++ tooling and a modern CMake.
 
 ## Important CMake Options
 
@@ -178,6 +186,20 @@ cmake -DGTSAM_BUILD_UNSTABLE:OPTION=ON ..
 
 Path to the MATLAB `mex` compiler. If `mex` is not already in `PATH`, point it at `$MATLABROOT/bin/mex`.
 
+### `GTSAM_BUILD_PYTHON`
+
+Enable the Python wrapper with:
+
+```sh
+cmake -S . -B build -DGTSAM_BUILD_PYTHON=1
+```
+
+If you need a specific interpreter version, add `-DGTSAM_PYTHON_VERSION=<version>`.
+
+### `GTSAM_USE_BOOST_FEATURES` and `GTSAM_ENABLE_BOOST_SERIALIZATION`
+
+These flags control the optional Boost dependency. If both are `OFF`, GTSAM can be built without Boost.
+
 ## Debugging Tips
 
 GTSAM makes extensive use of debug assertions, so development work should usually happen in `Debug` mode. Switch back to `Release` when benchmarking or running finished code.
@@ -190,7 +212,16 @@ Another useful option is `_GLIBCXX_DEBUG`, which enables additional standard lib
 2. Enable TBB on multi-core systems and benchmark with and without it.
 3. Consider `-march=native` in `GTSAM_CMAKE_CXX_FLAGS` if portability is not a concern.
 4. Only enable MKL if you have measured a real benefit.
+5. If you use TBB and memory growth is a concern, try `-DGTSAM_TBB_BOUNDED_MEMORY_GROWTH=ON`.
 
 ## API Documentation
 
-For API documentation, see the [generated Doxygen site](/doxygen/).
+For API documentation, see:
+
+- [C++ API docs](/doxygen/)
+- [Python API docs](https://borglab.github.io/gtsam/)
+
+Wrapper-specific build details are documented in the upstream repository:
+
+- [Python wrapper README](https://github.com/borglab/gtsam/blob/develop/python/README.md)
+- [MATLAB wrapper README](https://github.com/borglab/gtsam/blob/develop/matlab/README.md)

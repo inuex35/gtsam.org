@@ -8,11 +8,19 @@ For a hands-on mathematical introduction, start with [Factor Graphs and GTSAM: A
 
 For a broader treatment of factor graphs in robotics, see [Factor graphs for robot perception](https://www.cs.cmu.edu/~kaess/pub/Dellaert17fnt.pdf) by Frank Dellaert and Michael Kaess.
 
+The current stable release is 4.2. The active development line is pre-4.3 and recent alpha releases follow that branch.
+
 ## API and Wrapper Documentation
 
-Detailed API documentation is currently available for C++ through the [generated Doxygen site](/doxygen/).
+Detailed API documentation is available through:
 
-GTSAM also ships with Python and MATLAB wrappers. The wrapper API pages are limited compared to the C++ docs, so the Doxygen site is still the best reference for detailed behavior.
+- [C++ API docs](/doxygen/)
+- [Python API docs](https://borglab.github.io/gtsam/)
+
+GTSAM also ships with Python and MATLAB wrappers. For build and packaging details, see the upstream wrapper READMEs:
+
+- [Python wrapper README](https://github.com/borglab/gtsam/blob/develop/python/README.md)
+- [MATLAB wrapper README](https://github.com/borglab/gtsam/blob/develop/matlab/README.md)
 
 ## Notes on GTSAM
 
