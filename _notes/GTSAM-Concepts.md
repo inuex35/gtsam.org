@@ -17,12 +17,12 @@ GTSAM is built on these ideas. Rather than relying on deep inheritance hierarchi
 
 This page gives the high-level picture. For the more implementation-oriented guides in the current `gtsam` repository, see:
 
-- [Overview in `doc/GTSAM-Concepts.md`](https://github.com/borglab/gtsam/blob/develop/doc/GTSAM-Concepts.md)
-- [Creating a `Manifold`](https://github.com/borglab/gtsam/blob/develop/gtsam/base/doc/Manifold.md)
-- [Creating a `Group`](https://github.com/borglab/gtsam/blob/develop/gtsam/base/doc/Group.md)
-- [Creating a `LieGroup`](https://github.com/borglab/gtsam/blob/develop/gtsam/base/doc/LieGroup.md)
-- [Creating a `MatrixLieGroup`](https://github.com/borglab/gtsam/blob/develop/gtsam/base/doc/MatrixLieGroup.md)
-- [Creating a `VectorSpace`](https://github.com/borglab/gtsam/blob/develop/gtsam/base/doc/VectorSpace.md)
+- [Overview in `doc/GTSAM-Concepts.md`](https://borglab.github.io/gtsam/gtsam-concepts/)
+- [Creating a `Manifold`](https://borglab.github.io/gtsam/manifold/)
+- [Creating a `Group`](https://borglab.github.io/gtsam/group/)
+- [Creating a `LieGroup`](https://borglab.github.io/gtsam/liegroup/)
+- [Creating a `MatrixLieGroup`](https://borglab.github.io/gtsam/matrixliegroup/)
+- [Creating a `VectorSpace`](https://borglab.github.io/gtsam/vectorspace/)
 
 ## Testable
 

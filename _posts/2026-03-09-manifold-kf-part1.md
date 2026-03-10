@@ -36,7 +36,7 @@ GTSAM's new hierarchy separates the common update logic from increasingly struct
 3. `InvariantEKF` is a particularly important case where the prediction is pure group composition and the linearized error dynamics become state independent.
 4. `LeftLinearEKF` generalizes that with a left-linear prediction model $X_{k+1} = W \phi(X_k) U$.
 
-A more detailed starting point in the tree is the note [EKF-variants.md](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/doc/EKF-variants.md). In a GTSAM context the main motivation is really IMU integration and `NavState`: once you want filtering on rotation, position, and velocity together, the plain vector-space EKF viewpoint starts to become awkward.
+A more detailed starting point in the tree is the note [EKF-variants.md](https://borglab.github.io/gtsam/ekf-variants/). In a GTSAM context the main motivation is really IMU integration and `NavState`: once you want filtering on rotation, position, and velocity together, the plain vector-space EKF viewpoint starts to become awkward.
 
 ## 1. ManifoldEKF
 
@@ -104,10 +104,10 @@ This is why invariant filtering tends to be more robust on Lie groups: the error
 
 For hands-on exploration, start with the notebooks:
 
-- Notebook: [InvariantEKF.ipynb](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/doc/InvariantEKF.ipynb)
-- Notebook: [Gal3ImuEKF.ipynb](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/doc/Gal3ImuEKF.ipynb)
-- Notebook: [Gal3ImuExample.ipynb](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/Gal3ImuExample.ipynb)
-- Notebook: [Gal3ImuASVExample.ipynb](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/Gal3ImuASVExample.ipynb)
+- Notebook: [InvariantEKF.ipynb](https://borglab.github.io/gtsam/invariantekf/)
+- Notebook: [Gal3ImuEKF.ipynb](https://borglab.github.io/gtsam/gal3imuekf/)
+- Notebook: [Gal3ImuExample.ipynb](https://borglab.github.io/gtsam/gal3imuexample/)
+- Notebook: [Gal3ImuASVExample.ipynb](https://borglab.github.io/gtsam/gal3imuasvexample/)
 
 Then look at the concrete repository examples:
 
@@ -138,9 +138,9 @@ Viewed this way, `InvariantEKF` is really a special case of `LeftLinearEKF`: the
 
 For hands-on exploration, start with the notebooks:
 
-- Notebook: [NavStateImuEKF.ipynb](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/doc/NavStateImuEKF.ipynb)
-- Notebook: [NavStateImuExample.ipynb](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/NavStateImuExample.ipynb)
-- Notebook: [NavStateImuASVExample.ipynb](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/NavStateImuASVExample.ipynb)
+- Notebook: [NavStateImuEKF.ipynb](https://borglab.github.io/gtsam/navstateimuekf/)
+- Notebook: [NavStateImuExample.ipynb](https://borglab.github.io/gtsam/navstateimuexample/)
+- Notebook: [NavStateImuASVExample.ipynb](https://borglab.github.io/gtsam/navstateimuasvexample/)
 
 Then look at the class and tests:
 
