@@ -36,7 +36,7 @@ GTSAM's new hierarchy separates the common update logic from increasingly struct
 3. `InvariantEKF` is a particularly important case where the prediction is pure group composition and the linearized error dynamics become state independent.
 4. `LeftLinearEKF` generalizes that with a left-linear prediction model $X_{k+1} = W \phi(X_k) U$.
 
-The best single starting point in the tree today is the navigation note [EKF-variants.md](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/doc/EKF-variants.md), and in the GTSAM context the main motivation is really `NavState`: once you want filtering on rotation, position, and velocity together, the plain vector-space EKF viewpoint starts to become awkward.
+A more detailed starting point in the tree is the note [EKF-variants.md](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/doc/EKF-variants.md). In a GTSAM context the main motivation is really IMU integration and `NavState`: once you want filtering on rotation, position, and velocity together, the plain vector-space EKF viewpoint starts to become awkward.
 
 ## 1. ManifoldEKF
 
@@ -53,18 +53,18 @@ $$
 X_{k+1} = X_{\text{next}}, \qquad P_{k+1} = F_k P_k F_k^T + Q_k.
 $$
 
-The figure above is a good way to read the algorithm. The <span style="color: #c62828;">red</span> arrow is the predict step on the state manifold, the <span style="color: #2e7d32;">green</span> arrow is the measurement update in the tangent space, and the <span style="color: #1565c0;">blue</span> arrow is the reset step that moves the corrected tangent-space estimate back to the manifold.
+The figure above gives an overview of the algorithm. The <span style="color: #c62828;">red</span> arrow is the predict step on the state manifold, the <span style="color: #2e7d32;">green</span> arrow is the measurement update in the tangent space, and the <span style="color: #1565c0;">blue</span> arrow is the reset step that moves the corrected tangent-space estimate back to the manifold.
 
-The tangent spaces are the key point. In the figure, the <span style="color: #c62828;">red</span> prediction moves from $T_{\mu_k}\mathcal{M}$ to the predicted state on the manifold, after which the filter works in the tangent space at that predicted state. The <span style="color: #2e7d32;">green</span> measurement update uses the measurement tangent space $T_y\mathcal{N}$ together with the predicted state tangent space to compute a correction, producing a corrected estimate in the tangent space at the predicted state. The actual `retract` happens only in the <span style="color: #1565c0;">blue</span> reset step, where that corrected tangent-space estimate is pushed back onto the manifold and the covariance is transported to the new tangent space at the updated state.
+Tangent spaces are key to the working of the filter, as they provide local vector spaces in which we can use the "good old" EKF equations. In the figure, the <span style="color: #c62828;">red **prediction** moves from $T_{\mu_k}\mathcal{M}$ to the predicted state on the manifold</span>, after which the filter works in the tangent space at that predicted state. The <span style="color: #2e7d32;">green measurement **update** fuses the a measurement likelihood with the predictive density to produce a corrected estimate, *still* in the tangent space at the predicted state</span>. The actual `retract` happens only in the <span style="color: #1565c0;">blue **reset** step, where that corrected tangent-space estimate is pushed back onto the manifold and the covariance is transported to the new tangent space at the updated state</span>.
 
-This is the core idea behind the whole hierarchy: keep the estimate on the manifold, do uncertainty calculations in the tangent space, and transport covariance correctly when the base point changes.
+This is the core idea behind the whole hierarchy: keep the estimate on the manifold, do uncertainty calculations in the tangent space, and transport covariance correctly when the base point changes. The underlying probability model is the [Concentrated Gaussian](https://borglab.github.io/gtsam/concentratedgaussian/).
 
 Useful places to look:
 
 - Header: [ManifoldEKF.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/ManifoldEKF.h)
 - Tests: [testManifoldEKF.cpp](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/tests/testManifoldEKF.cpp)
 
-The tests are worth a look because they show the class on both `Unit3` and `Pose2`, which makes the base abstraction very concrete.
+The tests are worth a look because they show the class on both `Unit3` and `Pose2`, which makes the base abstraction very concrete. While `Unit3` is a manifold (the sphere), the `Pose2` class in GTSAM corresponds to the Lie group $SE(2)$, so the next filter explicitly acknowledges that.
 
 ## 2. LieGroupEKF
 
@@ -84,29 +84,23 @@ That example uses a `Rot3` state with state-dependent dynamics and a magnetomete
 
 [`InvariantEKF`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/InvariantEKF.h) is the most immediately useful class in the current set. It uses the left-invariant prediction structure emphasized by Barrau and Bonnabel; a good entry point is the survey-style tutorial ["The Invariant Extended Kalman Filter as a Stable Observer"](https://arxiv.org/abs/1410.1465) and the related IEKF papers by Barrau and Bonnabel.
 
-In the simplest view,
-
-$$
-X_{k+1} = X_k U_k,
-$$
-
-or more generally
+In the simplest view, this handles cases where we can write the dynamics in terms of group composition,
 
 $$
 X_{k+1} = W_k X_k U_k.
 $$
 
-The key payoff is that the error dynamics are state independent. In the basic case implemented here, the linearized propagation Jacobian is
+with $W_k$ and $U_k$ elements of the group themselves. In the examples below $W_k$ is due to *gravity*, acting in the navigation/world frame, and $U_k$ updates the state using IMU measurements in the body frame.
+
+The key payoff is that the error dynamics are state independent. For the dynamics above, the linearized propagation Jacobian is
 
 $$
-F_k = \operatorname{Ad}_{U_k^{-1}},
+F_k = \mathop{Ad}_{U_k^{-1}},
 $$
 
 so it depends only on the increment $U_k$, not on the current state estimate $X_k$.
 
-This is why invariant filtering tends to be more robust on Lie groups: the error propagation is correct even if the filter state is wrong, which is especially important in transients and at startup.
-
-Our current `InvariantEKF` is deliberately more restricted than the full theory. For now it focuses on the clean left-invariant prediction cases that fit naturally in the current GTSAM API. That is a narrower target than the IEKF paper treatment, which uses the concept of group-affine dynamics, but it is probably the most useful case to have available first.
+This is why invariant filtering tends to be more robust on Lie groups: the error propagation is correct even if the filter state is wrong, which is especially important in transients, e.g., at startup.
 
 For hands-on exploration, start with the notebooks:
 
@@ -120,25 +114,25 @@ Then look at the concrete repository examples:
 - [IEKF_SE2Example.cpp](https://github.com/borglab/gtsam/blob/develop/examples/IEKF_SE2Example.cpp): left-invariant filtering on `Pose2` with odometry prediction and GPS-like updates
 - [IEKF_NavstateExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/IEKF_NavstateExample.cpp): invariant filtering on `NavState` with IMU prediction and GPS update
 
+The `InvariantEKF`` is deliberately more restricted than the full theory, and focuses on the clean **left-invariant** prediction cases that fit naturally in the current GTSAM API. That is a narrower target than the IEKF paper treatment, which uses the concept of group-affine dynamics. The next filter considerably widens that scope based on a later paper.
+
 ## 4. LeftLinearEKF
 
-[`LeftLinearEKF`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeftLinearEKF.h) is a later and more general extension of the same line of thinking. In the GTSAM context, the motivation for this extra concept is `NavState`: it is exactly what lets us model the autonomous part of navigation dynamics cleanly, with velocity driving position through an automorphism before the left and right group increments are applied.
+[`LeftLinearEKF`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeftLinearEKF.h) is a more general extension of the same line of thinking, introduced in the Barrau-Bonnabel paper ["Linear Observed Systems on Groups"](https://www.sciencedirect.com/science/article/pii/S0167691119300805).
+In the GTSAM context, the motivation for this extra concept is `NavState`: it is exactly what lets us model the autonomous part of navigation dynamics cleanly.
 
-It is for Lie-group systems whose discrete dynamics can be written as
+In short, it is for Lie-group systems whose discrete dynamics can be written as
 
 $$
 X_{k+1} = W_k \, \phi(X_k) \, U_k,
 $$
 
-where $\phi$ is an automorphism of the group.
-
+where $\phi$ is an **automorphism** of the group.
 That is a big word, but for `NavState` the key idea is simple: position advances by velocity in the autonomous part of the dynamics,
 
 $$
 p_{k+1} = p_k + v_k \Delta t.
 $$
-
-This is directly inspired by the Barrau-Bonnabel paper ["Linear Observed Systems on Groups"](https://www.sciencedirect.com/science/article/pii/S0167691119300805).
 
 Viewed this way, `InvariantEKF` is really a special case of `LeftLinearEKF`: the case where the automorphism part is trivial, so the prediction collapses to group composition. I wanted to introduce `InvariantEKF` first because it is likely to be the more useful entry point for most users, but mathematically `LeftLinearEKF` is the more general object.
 
