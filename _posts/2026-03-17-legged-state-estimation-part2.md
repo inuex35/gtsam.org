@@ -3,7 +3,7 @@ layout: gtsam-post
 title:  "The Manifold Kalman Filter Hierarchy, Part 2: Legged State Estimation"
 ---
 
-Authors: [Frank Dellaert](https://dellaert.github.io/), Scott Baker
+Authors: [Frank Dellaert](https://dellaert.github.io/), Varun Agrawal
 
 <!-- - TOC -->
 {:toc}
@@ -54,11 +54,11 @@ Once the contact update becomes a graph problem, the natural next step is to kee
 
 That is what variant 3 does. [`LeggedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h) builds a fixed-lag window over contact events, creates foothold variables per contact episode, and links consecutive base states with preintegrated IMU motion factors. In the current implementation those motion links are `ImuFactor2` factors from [ImuFactor.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/ImuFactor.h), which is exactly the right level of detail to mention here: the smoother is still using the invariant contact structure, but now it can use several steps of information at once.
 
-<figure class="center" style="width: 112%; max-width: 112%; margin-left: -6%;">
-  <img src="/assets/images/legged-kf/legged-fixed-lag-window.svg"
-    alt="Fixed-lag smoother structure for the legged estimator"
-    style="width: 100%; max-width: none;" />
-  <figcaption>Two views of the same progression: variant 3 keeps a sliding window with one shared bias variable, while variant 4 upgrades that to a bias trajectory across the window.</figcaption>
+<figure class="center" style="width: 96%; max-width: 96%;">
+  <img src="/assets/images/legged-kf/legged-fixed-lag-single-bias.svg"
+    alt="Fixed-lag smoother with one shared bias variable"
+    style="width: 100%;" />
+  <figcaption>Variant 3 keeps a short window over contact events, contact-episode footholds, and one shared IMU bias variable across the window.</figcaption>
 </figure>
 <br />
 
@@ -69,6 +69,14 @@ This is where the factor-graph viewpoint really starts to pay off. The filter va
 The last step is to stop assuming a single bias can explain the entire lag window.
 
 Variant 4 keeps the same contact-episode smoother structure, but upgrades the inertial side from one shared bias estimate to a bias trajectory over the window. In GTSAM that means moving from [`LeggedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h) to [`LeggedCombinedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h), and from `ImuFactor2`-style links to [`CombinedImuFactor`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/CombinedImuFactor.h).
+
+<figure class="center" style="width: 96%; max-width: 96%;">
+  <img src="/assets/images/legged-kf/legged-fixed-lag-combined-bias.svg"
+    alt="Fixed-lag smoother with evolving bias states"
+    style="width: 100%;" />
+  <figcaption>Variant 4 keeps the same sliding-window idea, but replaces the shared bias with a bias trajectory and `CombinedImuFactor` links between consecutive events.</figcaption>
+</figure>
+<br />
 
 Conceptually, the change is simple but important. Variant 3 says: "within this lag, one bias estimate is good enough." Variant 4 says: "let the bias evolve, and estimate that evolution explicitly." In the replay source this final estimator is the `fixed_lag_combined_bias` variant in [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp). That makes it the most expressive of the four reference implementations, and also the closest to the direction many serious legged-estimation systems eventually need to go.
 
