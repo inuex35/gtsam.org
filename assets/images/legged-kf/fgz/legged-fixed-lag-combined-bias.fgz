@@ -1,5 +1,5 @@
 fgz 1
-style node_size=8.4mm factor_size=3.0mm label_sep=0.15pt label_font=small
+style node_size=7.2mm factor_size=2.6mm label_sep=0.15pt label_font=scriptsize
 
 xm1 = X_{k-1}
 xk = X_k
@@ -17,5 +17,5 @@ variable bm1 (1.0, 2.2) color=yellow!18
 variable bk (3.8, 2.2) color=yellow!18
 variable bp1 (6.6, 2.2) color=yellow!18
 
-factor {xm1, xk, bm1, bk} (2.4, 1.45) shape=square color=green!18 label=u1 size=6.8mm font=scriptsize
-factor {xk, xp1, bk, bp1} (5.2, 1.45) shape=square color=green!18 label=u2 size=6.8mm font=scriptsize
+factor {xm1, xk, bm1, bk} (2.4, 1.45) shape=square color=green!18 label=u1 size=5.6mm font=scriptsize
+factor {xk, xp1, bk, bp1} (5.2, 1.45) shape=square color=green!18 label=u2 size=5.6mm font=scriptsize
