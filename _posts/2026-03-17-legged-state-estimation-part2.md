@@ -8,11 +8,9 @@ Authors: [Frank Dellaert](https://dellaert.github.io/), Varun Agrawal
 <!-- - TOC -->
 {:toc}
 
-[Part I](/2026/03/09/manifold-kf-part1.html) introduced the new manifold and Lie-group Kalman filter hierarchy in GTSAM. This post is about a much more concrete question: what do those ideas buy you on a real legged robot climbing stairs with an IMU and contact kinematics?
+[Part I](/2026/03/09/manifold-kf-part1.html) introduced the new manifold and Lie-group Kalman filter hierarchy in GTSAM. Here we highlight one of the most impactful applications of the invariant filter in robotics: legged state estimation with an IMU and contact kinematics, in the spirit of Ross Hartley et al.'s paper ["Contact-aided invariant extended Kalman filtering for robot state estimation"](https://arxiv.org/abs/1904.09251).
 
-The answer is: quite a lot. The newly merged legged-estimation examples in GTSAM show a clean progression from an invariant filter, to an invariant filter with a local graph update, to two fixed-lag smoothers that use the same contact model but retain more information over time.
-
-Early on, the best place to explore all of this is the published notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/). For source, start with the C++ replay driver [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp) and the implementation in [LeggedEstimator.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h).
+After introducing the filter itself, we will show how factor graphs can be leveraged for increasingly more sophisticated legged estimators: first a local graph update, then a fixed-lag smoother with one shared bias, and finally a fixed-lag smoother with a bias trajectory.
 
 <figure class="center" style="width: 110%; max-width: 110%; margin-left: -5%;">
   <img src="/assets/images/legged-kf/stairs_side.gif"
@@ -85,5 +83,7 @@ Conceptually, the change is simple but important. Variant 3 says: "within this l
 This sequence of estimators is a nice example of why the filter hierarchy in Part I was worth building in the first place. The invariant structure gives a strong filtering baseline for contact-aided navigation, the local graph fragment makes the contact update more faithful without giving up online behavior, and the fixed-lag smoothers show how naturally the same ideas extend into fuller factor-graph inference.
 
 By providing these reference implementations for leg robot state estimation, we hope to lower the barrier of entry to using these or implementing your own variants on top of them.
+
+If you want to explore more, start with the published notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/), then look at the C++ replay driver [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp) and the implementation in [LeggedEstimator.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h).
 
 _Disclosure: AI was used to help draft this post._
