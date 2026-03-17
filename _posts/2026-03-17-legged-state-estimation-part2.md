@@ -20,17 +20,15 @@ After introducing the filter itself, we will show how factor graphs can be lever
 </figure>
 <br />
 
-## 1. A simplified invariant filter is already very useful
+## 1. A simplified contact-aided invariant invariant EKF
 
-The first useful legged variant keeps the invariant-filter structure of the earlier tutorial, but trims Hartley's contact-aided construction down to something easy to read and modify in GTSAM.
+A cool idea, tracing back to [Michael Bloesch et al.](https://infoscience.epfl.ch/server/api/core/bitstreams/bb6c046d-6633-4c8c-8a5f-f8729667c6b6/content), is to treat legged pose estimation as a "foot-SLAM" problem: we should not just "use contacts", but augment the state with contact "landmarks". Our starting point in this post is Ross Hartley et al.'s later paper, ["Contact-aided invariant extended Kalman filtering for robot state estimation"](https://arxiv.org/abs/1904.09251), which does so in a way that preserves invariant dynamics by extending $SE_2(3)$. In GTSAM, the [`LeggedInvariantEKF`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h) follows that same spirit with an `ExtendedPose3` state containing rotation, position, velocity, and footholds.
 
-The starting point is Ross Hartley et al.'s paper ["Contact-aided invariant extended Kalman filtering for robot state estimation"](https://arxiv.org/abs/1904.09251). The important idea is not just "use contacts", but augment the state with contact landmarks in a way that preserves invariant dynamics. In GTSAM, [`LeggedInvariantEKF`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h) follows that same spirit with an `ExtendedPose3` state containing rotation, position, velocity, and footholds.
+Our implementation is deliberately simpler. Rather than taking joint angles as measurements, it treats feet as body-frame contact measurements in 3D. In the provided example we replay the small staircase example, pushing "contact packets" into the filter on touchdown, or after `100 ms` of dead reckoning, whichever comes first. That logic lives in [buildContactReplayPlan](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
 
-Our variant 1 is deliberately simpler. It treats feet as body-frame contact measurements, keeps only the currently active footholds in the state, and in the reference replay setup never has to manage more than four of them. The replay driver also makes the contact-update schedule explicit: it pushes contact packets into the estimator on touchdown, or after `100 ms` of dead reckoning, whichever comes first. That logic lives in [buildContactReplayPlan](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp), and it is one of the reasons the example is so readable.
+This gives a very practical invariant filter: light-weight, recursive, and geometry-aware, without forcing an update at a high frequency. Typically we are being pushed by the IMU, with occasional aiding by the foothold "landmark" sightings. The notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/) shows this as `LeggedInvariantEKF`, and the corresponding C++ replay variant is `invariant_ekf` in [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
 
-This gives a very practical invariant filter: light-weight, recursive, and geometry-aware, without forcing a full smoothing problem at every step. The published notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/) shows this as `LeggedInvariantEKF`, and the corresponding C++ replay variant is `invariant_ekf` in [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
-
-## 2. The next step is a graph fragment, not a whole graph
+## 2. Replacing the update step with a factor graph solve
 
 Because GTSAM is a factor-graph library, the next natural step is to replace the pure EKF contact correction with a small nonlinear solve over the current base state and all feet in contact.
 
@@ -84,6 +82,6 @@ This sequence of estimators is a nice example of why the filter hierarchy in Par
 
 By providing these reference implementations for leg robot state estimation, we hope to lower the barrier of entry to using these or implementing your own variants on top of them.
 
-If you want to explore more, start with the published notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/), then look at the C++ replay driver [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp) and the implementation in [LeggedEstimator.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h).
+If you want to explore more, start with the notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/), then look at the C++ replay driver [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp) and the implementation in [LeggedEstimator.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h).
 
 _Disclosure: AI was used to help draft this post._
