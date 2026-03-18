@@ -15,7 +15,7 @@ GTSAM now has a small but useful hierarchy of Kalman filters for states that do 
 - `InvariantEKF`
 - `LeftLinearEKF`
 
-Part 2 will cover the newer equivariant filters.
+Part 2 discusses legged state estimation as an application of invariant filtering: [The Manifold Kalman Filter Hierarchy, Part 2: Legged State Estimation](/2026/03/17/legged-state-estimation-part2.html). Part 3 will cover the newer equivariant filters.
 
 <figure class="center" style="width: 122%; max-width: 122%; margin-left: -11%;">
   <img src="/assets/images/manifold-kf/splash.png"
@@ -151,12 +151,12 @@ So even if you never instantiate `LeftLinearEKF` directly, it is already paying 
 
 ## Part 2
 
-This hierarchy does not stop at invariant filtering. The next step is equivariant filtering, where symmetry is used even more explicitly. GTSAM already has the machinery for that as well, including:
+This hierarchy does not stop at invariant filtering. Before moving on to equivariant filters, we discuss legged state estimation as a concrete application in [Part 2](/2026/03/17/legged-state-estimation-part2.html). The next step after that is equivariant filtering, where symmetry is used even more explicitly. GTSAM already has the machinery for that as well, including:
 
 - [`EquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/EquivariantFilter.h)
 - [testEquivariantFilter.cpp](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/tests/testEquivariantFilter.cpp)
 - [AbcEquivariantFilterExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp)
 
-We will cover that in detail in part two.
+We will cover that in detail in part three.
 
 _Disclosure: AI was used to help draft this post._
