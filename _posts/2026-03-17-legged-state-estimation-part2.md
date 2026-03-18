@@ -8,7 +8,7 @@ Authors: [Frank Dellaert](https://dellaert.github.io/), [Varun Agrawal](https://
 <!-- - TOC -->
 {:toc}
 
-[Part I](/2026/03/09/manifold-kf-part1.html) introduced the new manifold and Lie-group Kalman filter hierarchy in GTSAM. Here we highlight one of the most impactful applications of the invariant filter in robotics: legged state estimation with an IMU and contact kinematics, in the spirit of Ross Hartley et al.'s paper ["Contact-aided invariant extended Kalman filtering for robot state estimation"](https://arxiv.org/abs/1904.09251).
+[Part I](/2026/03/09/manifold-kf-part1.html) introduced the new manifold and Lie-group Kalman filter hierarchy in GTSAM. Here we highlight one of the most impactful applications of the invariant filter in robotics: legged state estimation with an IMU and contact kinematics, in the spirit of Ross Hartley, who also wrote an earlier GTSAM post on [legged robot factors]({% post_url 2019-09-18-legged-robot-factors-part-I %}), and the later paper ["Contact-aided invariant extended Kalman filtering for robot state estimation"](https://arxiv.org/abs/1904.09251).
 
 After introducing the filter itself, we will show how factor graphs can be leveraged for increasingly more sophisticated legged estimators: first a local graph update, then a fixed-lag smoother with one shared bias, and finally a fixed-lag smoother with a bias trajectory.
 
