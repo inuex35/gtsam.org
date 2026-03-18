@@ -3,7 +3,7 @@ layout: gtsam-post
 title:  "The Manifold Kalman Filter Hierarchy, Part 2: Legged State Estimation"
 ---
 
-Authors: [Frank Dellaert](https://dellaert.github.io/), Varun Agrawal
+Authors: [Frank Dellaert](https://dellaert.github.io/), [Varun Agrawal](https://varunagrawal.github.io/)
 
 <!-- - TOC -->
 {:toc}
@@ -24,7 +24,8 @@ After introducing the filter itself, we will show how factor graphs can be lever
 
 A cool idea, tracing back to [Michael Bloesch et al.](https://infoscience.epfl.ch/server/api/core/bitstreams/bb6c046d-6633-4c8c-8a5f-f8729667c6b6/content), is to treat legged pose estimation as a "foot-SLAM" problem: we should not just "use contacts", but augment the state with contact "landmarks". Our starting point in this post is Ross Hartley et al.'s later paper, ["Contact-aided invariant extended Kalman filtering for robot state estimation"](https://arxiv.org/abs/1904.09251), which does so in a way that preserves invariant dynamics by extending $SE_2(3)$. In GTSAM, the [`LeggedInvariantEKF`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L139) follows that same spirit with an `ExtendedPose3` state containing rotation, position, velocity, and footholds.
 
-Our implementation is deliberately simpler. Rather than taking joint angles as measurements, it treats feet as body-frame contact measurements in 3D. In the provided example we replay the small staircase example, pushing "contact packets" into the filter on touchdown, or after `100 ms` of dead reckoning, whichever comes first. That logic lives in [buildContactReplayPlan](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
+Our implementation is deliberately simpler. Rather than taking joint angles as measurements, it treats feet as body-frame contact measurements in 3D. This is in contrast to full kinematic chain modeling of the legs which, as we show in our [Humanoids 2022 publication](https://arxiv.org/abs/2209.05644), leads to better forward kinematics estimates but requires more work to model.
+In the provided example we replay the small staircase example, pushing "contact packets" into the filter on touchdown, or after `100 ms` of dead reckoning, whichever comes first. That logic lives in [buildContactReplayPlan](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
 
 This gives a very practical invariant filter: light-weight, recursive, and geometry-aware, without forcing an update at a high frequency. Typically we are being pushed by the IMU, with occasional aiding by the foothold "landmark" sightings. The notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/) shows this as `LeggedInvariantEKF`, and the corresponding C++ replay variant is `invariant_ekf` in [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
 
@@ -44,11 +45,11 @@ That is exactly what [`LeggedInvariantIEKF`](https://github.com/borglab/gtsam/bl
 
 This is a very GTSAM move. Rather than abandoning filtering altogether, variant 2 uses just enough factor-graph machinery to make the contact update richer and more nonlinear. The notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/) calls this `LeggedInvariantIEKF`, and the replay source exposes it as `invariant_graph` in [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
 
-## 3. Once the update is a graph problem, a smoother is the natural next step
+## 3. From filtering to smoothing
 
-Once the contact update becomes a graph problem, the natural next step is to keep a short history and smooth instead of throwing information away immediately.
+GTSAM is "Georgia Tech **Smoothing** and Mapping". Once we see the contact update as a small inverse kinematics optimization problem, it is natural to then keep a short history and *smooth* instead of throwing information away immediately.
 
-That is what variant 3 does. [`LeggedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L291) builds a fixed-lag window over contact events, creates foothold variables per contact episode, and links consecutive base states with preintegrated IMU motion factors. In the current implementation those motion links are `ImuFactor2` factors from [ImuFactor.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/ImuFactor.h), which is exactly the right level of detail to mention here: the smoother is still using the invariant contact structure, but now it can use several steps of information at once.
+That is what variant 3 does. [`LeggedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L291) builds a fixed-lag window over contact events, creates foothold variables per contact episode, and links consecutive base states with preintegrated ["IMU factors"](https://borglab.github.io/gtsam/imufactor/). In the current implementation those motion links are `ImuFactor2` factors from [ImuFactor.h](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/ImuFactor.h). We now no longer exploit invariance, but we now use several steps of information at once.
 
 <figure class="center" style="width: 82%; max-width: 82%;">
   <img src="/assets/images/legged-kf/legged-fixed-lag-single-bias.svg"
@@ -60,11 +61,9 @@ That is what variant 3 does. [`LeggedFixedLagSmoother`](https://github.com/borgl
 
 This is where the factor-graph viewpoint really starts to pay off. The filter variants summarize the past into one Gaussian belief at the current time. The smoother instead keeps a short recent history alive, which lets it combine delayed contact information with the accumulated IMU evidence between events. In the notebook [LeggedEstimator.ipynb](https://borglab.github.io/gtsam/leggedestimator/), this appears as `LeggedFixedLagSmoother`, and in the replay driver it is `fixed_lag_single_bias` in [LeggedEstimatorReplayExample.cpp](https://github.com/borglab/gtsam/blob/develop/examples/LeggedEstimatorReplayExample.cpp).
 
-## 4. The last step is to estimate bias over the whole lag, not just once
+## 4. Estimating bias
 
-The last step is to stop assuming a single bias can explain the entire lag window.
-
-Variant 4 keeps the same contact-episode smoother structure, but upgrades the inertial side from one shared bias estimate to a bias trajectory over the window. In GTSAM that means moving from [`LeggedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L291) to [`LeggedCombinedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L375), and from `ImuFactor2`-style links to [`CombinedImuFactor`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/CombinedImuFactor.h).
+The last step is to stop assuming a single bias can explain the entire lag window. Variant 4 keeps the same contact-episode smoother structure, but upgrades the inertial side from one shared bias estimate to a bias trajectory over the window. In GTSAM that means moving from [`LeggedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L291) to [`LeggedCombinedFixedLagSmoother`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/LeggedEstimator.h#L375), and from `ImuFactor2`-style links to [`CombinedImuFactor`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/CombinedImuFactor.h).
 
 <figure class="center" style="width: 82%; max-width: 82%;">
   <img src="/assets/images/legged-kf/legged-fixed-lag-combined-bias.svg"
