@@ -1,6 +1,6 @@
 ---
 layout: gtsam-post
-title:  "Fast Covariance Recovery in GTSAM Bayes Trees"
+title:  "Fast Covariance Recovery with Bayes Trees"
 ---
 
 Authors: [Frank Dellaert](https://dellaert.github.io/)
