@@ -58,6 +58,12 @@ Matrix covariance = joint.fullMatrix();
 
 Under the hood, `ISAM2` uses its internal `GaussianBayesTree` and the new Steiner tree localization to give you the answer in milliseconds, even for very large graphs.
 
+## Read more
+
+For more details on the iSAM2 API and configuration, check out the (new) [`ISAM2` user guide](https://borglab.github.io/gtsam/isam2/).
+
+You can also find a detailed report on the covariance recovery algorithm and the Steiner tree generalization in the [CovarianceRecovery.pdf](https://github.com/borglab/gtsam/blob/develop/doc/CovarianceRecovery.pdf).
+
 ## Summary
 
 The combination of iSAM2's incremental updates and Steiner tree's fast covariance recovery gives us the best of both worlds: we can maintain a high-rate estimate of the state and simultaneously query the exact uncertainty of any subset of variables without breaking the real-time budget.
