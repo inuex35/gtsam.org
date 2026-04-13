@@ -16,9 +16,9 @@ This was already true in Python, and it was always possible in C++ as well. Now,
 
 We recently added and refreshed several examples that show the same basic idea in different settings:
 
-- Python 1D sensor fusion notebook: [`python/gtsam/examples/CustomFactorExample.ipynb`](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/CustomFactorExample.ipynb)
-- Python landmark-localization notebook: [`python/gtsam/examples/CustomFactorLocalizationExample.ipynb`](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/CustomFactorLocalizationExample.ipynb)
-- C++ test showing direct use from a residual object: [`gtsam/nonlinear/tests/testCustomFactor.cpp`](https://github.com/borglab/gtsam/blob/develop/gtsam/nonlinear/tests/testCustomFactor.cpp)
+- [Python 1D sensor fusion notebook](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/CustomFactorExample.ipynb)
+- [Python landmark-localization notebook](https://github.com/borglab/gtsam/blob/develop/python/gtsam/examples/CustomFactorLocalizationExample.ipynb)
+- [C++ test showing direct use from a residual object](https://github.com/borglab/gtsam/blob/develop/gtsam/nonlinear/tests/testCustomFactor.cpp)
 
 There is now also a MATLAB example from [PR 2491](https://github.com/borglab/gtsam/pull/2491):
 
