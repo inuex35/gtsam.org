@@ -21,17 +21,17 @@ This is the third post in the manifold Kalman filter hierarchy series. [Part 1](
 
 That leaves an important gap. `ManifoldEKF` can already handle states such as `Unit3`, where the state is a point on a sphere rather than a Lie group. `InvariantEKF` gives us the more robust invariant-error behavior, but it assumes the state itself is a group. The `EquivariantFilter` fills that gap: the physical state can live on a general manifold, while a separate symmetry group acts on that state and gives us the error structure we wanted from invariant filtering.
 
-<figure class="center" style="width: 100%; max-width: 860px;">
-  <img src="/assets/images/equivariant/filter-hierarchy-gap.png"
-    alt="The GTSAM Kalman filter hierarchy showing EquivariantFilter as the branch for manifold states with a symmetry group action"
-    style="width: 100%;" />
-  <figcaption>EqF keeps the physical state on the manifold, but uses a symmetry group action to define and propagate the error.</figcaption>
-</figure>
-<br />
-
 If you want the full theory, a good starting point is the equivariant systems tutorial by Mahony, Hamel, and Trumpf, ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), and the EqF paper ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony. This post is the GTSAM-user version: what problem is the class solving, and what do you need to provide?
 
 ## The Gap in the Hierarchy
+
+<figure class="center" style="width: 100%; max-width: 900px;">
+  <img src="/assets/images/equivariant/group-action-manifold.png"
+    alt="A symmetry group hovering above a physical manifold, with lifted dynamics on the group and a group action pushing a reference state around the manifold"
+    style="width: 100%;" />
+  <figcaption>EqF keeps the physical state on the manifold, while a symmetry group above it transports the dynamics, error, and uncertainty. The group action $\phi$ pushes the reference state $\xi^\circ$ around the manifold to recover the current estimate.</figcaption>
+</figure>
+<br />
 
 The shortest possible summary is:
 
