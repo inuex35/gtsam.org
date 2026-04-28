@@ -3,7 +3,8 @@ layout: gtsam-post
 title:  "The Manifold Kalman Filter Hierarchy, Part 3: Equivariant Filters"
 ---
 
-> **Authors:** Rohan Bansal, Jennifer Oum, and [Frank Dellaert](https://dellaert.github.io/)
+> *Authors*: Rohan Bansal, Jennifer Oum, and [Frank Dellaert](https://dellaert.github.io/)
+> *GTSAM Contributors*: Jennifer Oum, Darshan Rajasekaran, Alessandro Fornasier
 
 <!-- - TOC -->
 {:toc}
@@ -37,18 +38,18 @@ The shortest possible summary is:
 
 > `EquivariantFilter` is an error-state Kalman filter where the error is chosen using a symmetry action, even when the physical state is not itself a group.
 
-That sentence is dense, so let us compare the relevant filters.
+Let's unpack this:
 
-`ManifoldEKF` is the broadest base class. It only needs a manifold state `M`: something with local coordinates, `retract`, and `localCoordinates`. That works for `Pose3`, `Rot3`, `NavState`, ordinary vectors, and also for `Unit3`, which represents a direction on the unit sphere. The catch is that the covariance and linearized dynamics are tied to the current estimate. That is the standard EKF story on a manifold.
+The `ManifoldEKF` is the most general: it only needs a manifold state $\cal M$: an object with a `retract`, and `localCoordinates`. That works for `Pose3`, `Rot3`, `NavState`, ordinary vectors, and also for `Unit3`, which represents a direction on the unit sphere. The catch is that the covariance and linearized dynamics are tied to the current estimate. That is the standard EKF story on a manifold.
 
-`InvariantEKF` is more specialized. It assumes the state is a Lie group and uses group structure to define an invariant error. When the dynamics have the right form, the propagated error no longer depends on the current estimate. This is why invariant filters are attractive at startup or during large transients: a bad estimate does not immediately make the covariance propagation bad in the same way a standard EKF linearization can.
+The `InvariantEKF` is more specialized: it assumes the state is a Lie group and uses group structure to define an invariant error. When the dynamics have the right form, the propagated error no longer depends on the current estimate. This is why invariant filters are attractive at startup or during large transients: a bad estimate does not immediately make the covariance propagation bad in the same way a standard EKF linearization can.
 
-`EquivariantFilter` sits between those two ideas. The state can be a manifold that is not a group. But we still introduce a group that moves points around on that manifold. That group action lets the filter define an error around a fixed reference point, rather than continually redefining everything around the current state estimate.
+The `EquivariantFilter` sits between those two ideas: the state can be a manifold that is not a group. But we still introduce a group that moves points around on that manifold. That *group action* lets the filter define an error around a fixed reference point, rather than continually redefining everything around the current state estimate.
 
-In other words, EqF lets us have our cake and eat it too:
+In other words, the "EqF" lets us have our cake and eat it too:
 
-- the physical state can be a general manifold `M`
-- the uncertainty propagation can exploit a symmetry group `G`
+- the physical state can be a general manifold $\cal M$
+- the uncertainty propagation can exploit a symmetry group $\cal G$
 - the usual EKF machinery still handles prediction, Kalman gain, and measurement update
 
 ## A Simple Example
@@ -73,10 +74,10 @@ $$
 
 Here, $\Omega$ is the angular velocity measured by the gyroscope. The matrix $\Omega^\times$ is the cross-product matrix, so the dynamics say that the magnetic-field direction appears to rotate in the robot's body frame as the robot turns. The measurement equation says the magnetometer observes that same direction, scaled by a constant magnetic-field strength $c_m$.
 
-The important detail is that the state is not a group. It is a point on the sphere:
+*The important detail is that the state is not a group*. It is a point on the sphere:
 
 $$
-M = \mathbb{S}^2.
+\mathcal{M} = \mathbb{S}^2.
 $$
 
 In GTSAM, that is a `Unit3`. You can perturb it locally with two tangent coordinates, but you cannot compose two directions and get another direction in the group-theoretic sense. So this is a natural state for `ManifoldEKF`, not for `InvariantEKF`.
@@ -84,24 +85,24 @@ In GTSAM, that is a `Unit3`. You can perturb it locally with two tangent coordin
 However, rotations act on directions. The group
 
 $$
-G = SO(3)
+\mathcal{G} = SO(3)
 $$
 
 moves points around on $\mathbb{S}^2$. In GTSAM terms, the physical state can be `Unit3`, while the symmetry group can be `Rot3`. This is exactly the kind of situation EqF is designed for: the state is not a group, but a group still acts on it.
 
 ## Manifolds, Groups, and Actions
 
-There are three geometric objects in play.
+So: there are three geometric objects in play:
+- A **manifold** is the physical state space. It might be curved globally, even though it has local tangent coordinates. `Unit3`, `Rot3`, `Pose3`, and `NavState` are all manifolds in GTSAM.
 
-A **manifold** is the physical state space. It might be curved globally, even though it has local tangent coordinates. `Unit3`, `Rot3`, `Pose3`, and `NavState` are all manifolds in GTSAM.
+- A **group** is something we can compose, invert, and compare to an identity element. `Rot3` and `Pose3` are groups; `Unit3` is not.
 
-A **group** is something we can compose, invert, and compare to an identity element. `Rot3` and `Pose3` are groups; `Unit3` is not.
+- A **group action** is a rule for how a group element moves a state. 
 
-A **group action** is a rule for how a group element moves a state. For the sphere example:
-
-- the manifold state is a direction $\eta \in \mathbb{S}^2$
-- the group is $SO(3)$
-- the action rotates the direction
+For the sphere example:
+  - the manifold state is a direction $\eta \in \mathbb{S}^2$
+  - the group is $SO(3)$
+  - the action rotates the direction
 
 This is the extra structure beyond `ManifoldEKF`. EqF does not require the state to be a group. It requires a useful group action on the state.
 
@@ -137,7 +138,7 @@ During prediction, the **lift** converts physical dynamics into a small motion i
 
 The price of the extra structure is that the model has to expose the right symmetries. For a concrete EqF, the user provides:
 
-- the physical state manifold `M`
+- the physical state manifold $\cal M$
 - the symmetry action, encoded as a `Symmetry` functor
 - a lift from physical dynamics to group motion
 - the input action needed to express the dynamics equivariantly
@@ -152,14 +153,14 @@ The generic implementation lives in [`gtsam/navigation/EquivariantFilter.h`](htt
 
 It is templated on:
 
-- `M`, the physical manifold state type
+- $\cal M$, the physical manifold state type
 - `Symmetry`, the functor that defines the group action
 
 The class inherits from `ManifoldEKF<M>`, so it reuses the same covariance, Kalman gain, and Joseph-form update machinery from the base hierarchy. The EqF-specific part is the additional symmetry bookkeeping.
 
 In the implementation:
 
-- `Symmetry::Group` is the group `G` used internally
+- `Symmetry::Group` is the group $\cal G$ used internally
 - `xi_ref_` is the fixed reference state $\xi^\circ$
 - `g_` is the lifted group estimate
 - `act_on_ref_(g_)` recovers the current manifold estimate
