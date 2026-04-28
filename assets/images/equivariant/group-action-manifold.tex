@@ -1,5 +1,5 @@
 \documentclass[tikz,border=2mm]{standalone}
-\usetikzlibrary{arrows.meta,calc,decorations.pathreplacing,positioning}
+\usetikzlibrary{arrows.meta,calc}
 
 \definecolor{manifoldFill}{RGB}{229,241,255}
 \definecolor{manifoldDraw}{RGB}{57,98,150}
@@ -15,66 +15,77 @@
   font=\sffamily,
   label/.style={font=\small\sffamily, text=textGray},
   mathlabel/.style={font=\small, text=textGray},
-  state/.style={circle, draw=black!70, fill=white, inner sep=1.4pt},
-  arrow/.style={line width=0.8pt, -{Latex[length=2.5mm]}},
-  flow/.style={arrow, draw=flowRed},
+  state/.style={circle, draw=black!70, fill=white, inner sep=1.45pt},
+  arrow/.style={line width=0.9pt, -{Latex[length=2.6mm]}},
+  dyn/.style={arrow, draw=flowRed},
   action/.style={arrow, draw=actionPurple},
   lift/.style={arrow, draw=black!55, dashed}
 ]
 
-% The state manifold.
-\path[fill=manifoldFill, draw=manifoldDraw, line width=1.1pt]
-  (-4.9,-1.20)
-  .. controls (-3.7,-2.05) and (-1.9,-2.20) .. (-0.1,-1.82)
-  .. controls (1.9,-1.40) and (3.45,-1.72) .. (4.95,-0.78)
-  .. controls (4.0,-0.08) and (2.25,0.18) .. (0.55,-0.10)
-  .. controls (-1.45,-0.43) and (-3.18,-0.20) .. (-4.9,-1.20)
+% Hovering symmetry group.
+\path[fill=groupFill, draw=groupDraw, line width=1.15pt]
+  (-4.75,1.95)
+  .. controls (-3.35,2.92) and (-1.15,3.05) .. (0.45,2.80)
+  .. controls (2.25,2.52) and (3.78,2.70) .. (4.85,3.40)
+  .. controls (4.00,4.10) and (2.20,4.35) .. (0.20,4.10)
+  .. controls (-1.95,3.83) and (-3.65,4.00) .. (-4.75,1.95)
   -- cycle;
-\node[label, anchor=west] at (-4.35,-1.58) {state manifold $M$};
+\node[label, anchor=west] at (-4.35,4.34) {symmetry group $\mathcal{G}$};
 
-% Manifold points and dynamics.
-\node[state, label={[mathlabel]below:$\xi^\circ$}] (xref) at (-2.85,-0.92) {};
-\node[state, label={[mathlabel]below:$\hat{\xi}$}] (xhat) at (2.10,-0.72) {};
-\draw[flow] (-2.25,-0.83)
-  .. controls (-0.85,-0.20) and (0.75,-0.20) .. (1.75,-0.62)
-  node[midway, above, mathlabel] {$f(\xi,u)$};
-\draw[action, line width=1.0pt] (xref)
-  .. controls (-0.85,-1.55) and (0.90,-1.42) .. (xhat)
-  node[midway, below, mathlabel] {$\hat{\xi}=\phi(\hat{g},\xi^\circ)$};
-
-% The hovering symmetry group.
-\path[fill=groupFill, draw=groupDraw, line width=1.1pt]
-  (-3.95,1.55)
-  .. controls (-2.55,2.30) and (-0.50,2.40) .. (1.15,2.10)
-  .. controls (2.95,1.78) and (4.20,2.10) .. (5.05,2.85)
-  .. controls (4.28,3.55) and (2.58,3.82) .. (0.62,3.55)
-  .. controls (-1.45,3.26) and (-3.05,3.48) .. (-3.95,1.55)
+% Physical state manifold.
+\path[fill=manifoldFill, draw=manifoldDraw, line width=1.15pt]
+  (-4.85,-1.75)
+  .. controls (-3.55,-2.48) and (-1.50,-2.62) .. (0.18,-2.32)
+  .. controls (2.10,-1.98) and (3.65,-2.12) .. (4.88,-1.28)
+  .. controls (3.90,-0.55) and (2.10,-0.34) .. (0.40,-0.58)
+  .. controls (-1.55,-0.86) and (-3.08,-0.70) .. (-4.85,-1.75)
   -- cycle;
-\node[label, anchor=west] at (-3.74,3.72) {symmetry group $G$};
+\node[label, anchor=west] at (-4.45,-2.32) {state manifold $\mathcal{M}$};
 
-% Group points and lifted dynamics.
-\node[state, label={[mathlabel]above:$I$}] (gid) at (-2.58,2.55) {};
-\node[state, label={[mathlabel]above:$\hat{g}$}] (ghat) at (2.02,2.70) {};
-\draw[flow] (-2.05,2.54)
-  .. controls (-0.80,3.18) and (0.85,3.22) .. (1.65,2.77)
-  node[midway, above, mathlabel] {$\Lambda(\xi,u)$};
+% Reference elements.
+\node[state, label={[mathlabel]left:$\xi^\circ$}] (xref) at (-3.35,-1.46) {};
+\node[state, label={[mathlabel]left:$I$}] (gid) at (-3.35,2.72) {};
 
-% Lift and action relationships.
-\draw[lift] (-0.10,-0.05)
-  .. controls (-0.35,0.70) and (-0.25,1.48) .. (0.10,2.28)
-  node[midway, right, mathlabel] {lift dynamics};
+% Estimates on group and manifold at two time steps.
+\node[state, label={[mathlabel]above:$\hat{g}_k$}] (gk) at (-0.72,2.95) {};
+\node[state, label={[mathlabel]above:$\hat{g}_{k+1}$}] (gkp1) at (2.38,3.12) {};
 
-\draw[action] (ghat)
-  .. controls (2.78,1.86) and (2.78,0.34) .. (xhat)
-  node[midway, right, mathlabel] {$\phi_{\hat{g}}$};
+\node[state, label={[mathlabel]below:$\hat{\xi}_k$}] (xk) at (-0.72,-1.48) {};
+\node[state, label={[mathlabel]below:$\hat{\xi}_{k+1}$}] (xkp1) at (2.38,-1.30) {};
+
+% Dynamics arrows: same time step progression on both spaces.
+\draw[dyn] (gk)
+  .. controls (0.18,3.42) and (1.46,3.54) .. (gkp1)
+  node[pos=0.58, above=3pt, mathlabel] {lifted dynamics};
+\draw[dyn] (xk)
+  .. controls (0.18,-0.96) and (1.46,-0.88) .. (xkp1)
+  node[pos=0.43, below=6pt, mathlabel] {manifold dynamics};
+
+% Group-action arrows from identity/reference to the corresponding estimates.
 \draw[action] (gid)
-  .. controls (-2.55,1.72) and (-2.72,0.25) .. (xref)
-  node[midway, left, mathlabel] {$\phi_I$};
+  .. controls (-2.58,3.02) and (-1.55,3.06) .. (gk);
+\draw[action] (xref)
+  .. controls (-2.62,-1.08) and (-1.56,-1.05) .. (xk)
+  node[midway, below, mathlabel] {$\phi(\hat{g}_k,\xi^\circ)$};
 
-% Explanatory brace.
-\draw[decorate, decoration={brace, amplitude=5pt}, draw=black!45]
-  (-4.35,0.95) -- (-4.35,2.98)
-  node[midway, xshift=-0.82cm, rotate=90, label] {same motion, lifted};
+\draw[action] (gid)
+  .. controls (-1.90,3.70) and (0.62,3.92) .. (gkp1);
+\draw[action] (xref)
+  .. controls (-1.92,-2.12) and (0.64,-2.18) .. (xkp1)
+  node[midway, below, mathlabel] {$\phi(\hat{g}_{k+1},\xi^\circ)$};
+
+% Vertical correspondences from group estimates to manifold estimates.
+\draw[action, dashed, opacity=0.55] (gk)
+  .. controls (-0.18,1.75) and (-0.18,-0.18) .. (xk)
+  node[pos=0.56, left, mathlabel, opacity=1] {$\phi_{\hat{g}_k}$};
+\draw[action, dashed, opacity=0.55] (gkp1)
+  .. controls (2.98,1.78) and (2.98,-0.12) .. (xkp1)
+  node[pos=0.56, right, mathlabel, opacity=1] {$\phi_{\hat{g}_{k+1}}$};
+
+% Lift relation between the two dynamics arrows.
+\draw[lift] (0.72,-0.95)
+  .. controls (0.45,0.18) and (0.45,1.76) .. (0.72,3.42)
+  node[midway, right, mathlabel] {$\Lambda$};
 
 \end{tikzpicture}
 \end{document}
