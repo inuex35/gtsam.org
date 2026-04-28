@@ -8,7 +8,7 @@ title:  "The Manifold Kalman Filter Hierarchy, Part 3: Equivariant Filters"
 <!-- - TOC -->
 {:toc}
 
-Last week we zoomed out and talked about [STAG](/2026/04/21/factor-graphs-and-world-models.html): state, dynamics, measurements, objectives, and how factor graphs can tie those pieces together. This week we zoom back in on one very GTSAM-specific corner of that story: if the state is not a vector space, what kind of Kalman filter should carry the online belief?
+Last week we zoomed out and talked about [STAG](/2026/04/21/factor-graphs-and-world-models.html): state, dynamics, measurements, objectives, and how factor graphs can tie those pieces together. We discussed fixed-lag-smoothing, which optimizes over several states in the past, given measurement factors. This week we zoom back in on single-state *filters*, specifically filters in which the state lives on a **manifold**.
 
 This is the third post in the manifold Kalman filter hierarchy series. [Part 1](/2026/03/09/manifold-kf-part1.html) introduced:
 
@@ -17,11 +17,11 @@ This is the third post in the manifold Kalman filter hierarchy series. [Part 1](
 - `InvariantEKF`
 - `LeftLinearEKF`
 
-[Part 2](/2026/03/17/legged-state-estimation-part2.html) showed why invariant filtering matters in legged state estimation. The key advantage there was not only that the state lives on a Lie group. It was that the error dynamics can be made independent of the current state estimate, so uncertainty propagation remains meaningful even when the estimate is wrong.
+[Part 2](/2026/03/17/legged-state-estimation-part2.html) showed why *invariant* filtering matters in legged state estimation. Their key advantage is that the error dynamics can be made independent of the current state estimate, so uncertainty propagation remains correct even when the estimate is wrong.
 
-That leaves an important gap. `ManifoldEKF` can already handle states such as `Unit3`, where the state is a point on a sphere rather than a Lie group. `InvariantEKF` gives us the more robust invariant-error behavior, but it assumes the state itself is a group. The `EquivariantFilter` fills that gap: the physical state can live on a general manifold, while a separate symmetry group acts on that state and gives us the error structure we wanted from invariant filtering.
+The equivariant filter completes the hierarchy by providing the same capability for the case of *manifold* state spaces. The `ManifoldEKF` can already handle states such as `Unit3`, where the state is a point on a sphere rather than a Lie group. And the `InvariantEKF` gives us the invariant-error behavior, but it assumes the state itself is a group. The `EquivariantFilter` fills that gap: the physical state can live on a general manifold, while a separate symmetry group acts on that state and gives us the error structure we wanted from invariant filtering.
 
-If you want the full theory, a good starting point is the equivariant systems tutorial by Mahony, Hamel, and Trumpf, ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), and the EqF paper ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony. This post is the GTSAM-user version: what problem is the class solving, and what do you need to provide?
+This post is meant as a quick tutorial introduction for GTSAM users. The equivariant filter was introduced by Mahoney, Hamel and Trumpf and if you want the full story, their equivariant systems tutorial, ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276) is excellent. The "EqF paper" ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony is the next logical step.
 
 ## The Gap in the Hierarchy
 
@@ -29,7 +29,7 @@ If you want the full theory, a good starting point is the equivariant systems tu
   <img src="/assets/images/equivariant/group-action-manifold.png"
     alt="A symmetry group hovering above a physical manifold, with lifted dynamics on the group and a group action pushing a reference state around the manifold"
     style="width: 100%;" />
-  <figcaption>EqF keeps the physical state on the manifold, while a symmetry group above it transports the dynamics, error, and uncertainty. The group action $\phi$ pushes the reference state $\xi^\circ$ around the manifold to recover the current estimate.</figcaption>
+  <figcaption>EqF keeps the physical state on the manifold, while a symmetry group above it transports the dynamics, error, and uncertainty. The group action pushes the state around the manifold to recover the current estimate.</figcaption>
 </figure>
 <br />
 
