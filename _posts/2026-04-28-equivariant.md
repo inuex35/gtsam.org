@@ -21,7 +21,7 @@ This is the third post in the manifold Kalman filter hierarchy series. [Part 1](
 
 The equivariant filter completes the hierarchy by providing the same capability for the case of *manifold* state spaces. The `ManifoldEKF` can already handle states such as `Unit3`, where the state is a point on a sphere rather than a Lie group. And the `InvariantEKF` gives us the invariant-error behavior, but it assumes the state itself is a group. The `EquivariantFilter` fills that gap: the physical state can live on a general manifold, while a separate symmetry group acts on that state and gives us the error structure we wanted from invariant filtering.
 
-This post is meant as a quick tutorial introduction for GTSAM users. The equivariant filter was introduced by Mahoney, Hamel and Trumpf and if you want the full story, their equivariant systems tutorial, ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276) is excellent. The "EqF paper" ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony is the next logical step.
+This post is meant as a quick tutorial introduction for GTSAM users. The foundations were developed by Mahony, Hamel, and Trumpf in ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), and the main EqF reference is ["Equivariant Filter (EqF)"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony. An earlier short paper, ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2004.00828) by Mahony and Trumpf, is also useful background.
 
 ## The Gap in the Hierarchy
 
@@ -222,7 +222,9 @@ If the answer is yes, `EquivariantFilter<M, Symmetry>` gives you a reusable temp
 ## Further Reading
 
 - ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), Mahony, Hamel, and Trumpf
-- ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2010.14666), van Goor, Hamel, and Mahony
+- ["Equivariant Filter (EqF)"](https://arxiv.org/abs/2010.14666), van Goor, Hamel, and Mahony
+- ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2004.00828), Mahony and Trumpf
+- ["Overcoming Bias: Equivariant Filter Design for Biased Attitude Estimation with Online Calibration"](https://arxiv.org/abs/2209.12038), Fornasier, Ng, Brommer, Böhm, Mahony, and Weiss. This is the ABC paper that directly inspired the GTSAM ABC example.
 - GTSAM EqF test: [`testEquivariantFilter.cpp`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/tests/testEquivariantFilter.cpp)
 - More complicated ABC EqF example in GTSAM: [Example](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), [Filter](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h)
 
