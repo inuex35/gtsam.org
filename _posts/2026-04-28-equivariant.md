@@ -15,39 +15,13 @@ In GTSAM, we now also provide an **equivariant filter**. The word *equivariant* 
 
 This post is meant as a quick tutorial introduction for GTSAM users. The foundations were developed by Mahony, Hamel, and Trumpf in ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), and the main EqF reference is ["Equivariant Filter (EqF)"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony. An earlier short paper, ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2004.00828) by Mahony and Trumpf, is also useful background.
 
-## GTSAM's EKF Hierarchy
+## EqF: the Missing Piece in the Hierarchy
 
-This is the third post in the manifold Kalman filter hierarchy series. [Part 1](/2026/03/09/manifold-kf-part1.html) introduced:
+This is the third post in the manifold Kalman filter hierarchy series. [Part 1](/2026/03/09/manifold-kf-part1.html) introduced `ManifoldEKF`, `LieGroupEKF`, `InvariantEKF`, and `LeftLinearEKF`; [Part 2](/2026/03/17/legged-state-estimation-part2.html) showed why invariant filtering matters in legged state estimation.
 
-- `ManifoldEKF`
-- `LieGroupEKF`
-- `InvariantEKF`
-- `LeftLinearEKF`
+The **Equivariant Filter (EqF)** is the final missing piece. The `ManifoldEKF` can handle a broad range of manifold states, including `Unit3`, but its covariance propagation is tied to the current estimate. The `InvariantEKF` and `LeftLinearEKF` get the invariant-error behavior we like, where the propagated error can be much less dependent on the current estimate, but they assume the state itself is a Lie group.
 
-[Part 2](/2026/03/17/legged-state-estimation-part2.html) showed why *invariant* filtering matters in legged state estimation. Their key advantage is that the error dynamics can be made independent of the current state estimate, so uncertainty propagation remains correct even when the estimate is wrong.
-
-The equivariant filter completes the hierarchy by providing the same capability for the case of *manifold* state spaces. The `ManifoldEKF` can already handle states such as `Unit3`, where the state is a point on a sphere rather than a Lie group. And the `InvariantEKF` gives us the invariant-error behavior, but it assumes the state itself is a group. The `EquivariantFilter` fills that gap: the physical state can live on a general manifold, while a separate symmetry group acts on that state and gives us the error structure we wanted from invariant filtering.
-
-
-## The Gap in the Hierarchy
-
-The shortest possible summary is:
-
-> `EquivariantFilter` is an error-state Kalman filter where the error is chosen using a symmetry action, even when the physical state is not itself a group.
-
-Let's unpack this:
-
-The `ManifoldEKF` is the most general: it only needs a manifold state $\mathcal{M}$: an object with a `retract`, and `localCoordinates`. That works for `Pose3`, `Rot3`, `NavState`, ordinary vectors, and also for `Unit3`, which represents a direction on the unit sphere. The catch is that the covariance and linearized dynamics are tied to the current estimate. That is the standard EKF story on a manifold.
-
-The `InvariantEKF` is more specialized: it assumes the state is a Lie group and uses group structure to define an invariant error. When the dynamics have the right form, the propagated error no longer depends on the current estimate. This is why invariant filters are attractive at startup or during large transients: a bad estimate does not immediately make the covariance propagation bad in the same way a standard EKF linearization can.
-
-The `EquivariantFilter` sits between those two ideas: the state can be a manifold that is not a group. But we still introduce a group that moves points around on that manifold. That *group action* lets the filter define an error around a fixed reference point, rather than continually redefining everything around the current state estimate.
-
-In other words, the "EqF" lets us have our cake and eat it too:
-
-- the physical state can be a general manifold $\mathcal{M}$
-- the uncertainty propagation can exploit a symmetry group $\mathcal{G}$
-- the usual EKF machinery still handles prediction, Kalman gain, and measurement update
+The new `EquivariantFilter` fills the gap: it is an error-state Kalman filter where the physical state can live on a general manifold $\mathcal{M}$, while a separate symmetry group $\mathcal{G}$ acts on that state. The group action gives the filter an invariant-style error without requiring the state itself to be a group.
 
 ## A Simple Example
 
