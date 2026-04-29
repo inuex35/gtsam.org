@@ -3,7 +3,7 @@ layout: gtsam-post
 title:  "The Manifold Kalman Filter Hierarchy, Part 3: Equivariant Filters"
 ---
 
-*Authors*: Rohan Bansal, Jennifer Oum, and [Frank Dellaert](https://dellaert.github.io/).
+*Authors*: [Frank Dellaert](https://dellaert.github.io/) and [Rohan Bansal](https://rbansal.dev/).
 *GTSAM Contributors*: Jennifer Oum, Darshan Rajasekaran, Alessandro Fornasier (on whose code our examples are based).
 
 <!-- - TOC -->
