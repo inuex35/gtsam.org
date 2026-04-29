@@ -11,6 +11,12 @@ title:  "The Manifold Kalman Filter Hierarchy, Part 3: Equivariant Filters"
 
 Last week we zoomed out and talked about [STAG](/2026/04/21/factor-graphs-and-world-models.html): state, dynamics, measurements, objectives, and how factor graphs can tie those pieces together. We discussed fixed-lag-smoothing, which optimizes over several states in the past, given measurement factors. This week we zoom back in on single-state *filters*, specifically filters in which the state lives on a **manifold**.
 
+In GTSAM, we now also provide an **equivariant filter**. The word *equivariant* has the same basic meaning here as it does in equivariant neural networks: if you transform the input, the output should transform in the corresponding way. In filtering, the payoff is not just elegance. If the dynamics and measurements respect the symmetry, the filter can express its error around a fixed reference state instead of around the current, possibly wrong, estimate.
+
+This post is meant as a quick tutorial introduction for GTSAM users. The foundations were developed by Mahony, Hamel, and Trumpf in ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), and the main EqF reference is ["Equivariant Filter (EqF)"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony. An earlier short paper, ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2004.00828) by Mahony and Trumpf, is also useful background.
+
+## GTSAM's EKF Hierarchy
+
 This is the third post in the manifold Kalman filter hierarchy series. [Part 1](/2026/03/09/manifold-kf-part1.html) introduced:
 
 - `ManifoldEKF`
@@ -22,7 +28,6 @@ This is the third post in the manifold Kalman filter hierarchy series. [Part 1](
 
 The equivariant filter completes the hierarchy by providing the same capability for the case of *manifold* state spaces. The `ManifoldEKF` can already handle states such as `Unit3`, where the state is a point on a sphere rather than a Lie group. And the `InvariantEKF` gives us the invariant-error behavior, but it assumes the state itself is a group. The `EquivariantFilter` fills that gap: the physical state can live on a general manifold, while a separate symmetry group acts on that state and gives us the error structure we wanted from invariant filtering.
 
-This post is meant as a quick tutorial introduction for GTSAM users. The foundations were developed by Mahony, Hamel, and Trumpf in ["Equivariant Systems Theory and Observer Design"](https://arxiv.org/abs/2006.08276), and the main EqF reference is ["Equivariant Filter (EqF)"](https://arxiv.org/abs/2010.14666) by van Goor, Hamel, and Mahony. An earlier short paper, ["Equivariant Filter Design for Kinematic Systems on Lie Groups"](https://arxiv.org/abs/2004.00828) by Mahony and Trumpf, is also useful background.
 
 ## The Gap in the Hierarchy
 
@@ -120,7 +125,7 @@ $$
 e = \xi^\circ.
 $$
 
-That fixed reference point is the key. In a usual manifold EKF, the tangent space and linearization move with the current estimate. In an equivariant filter, the symmetry action lets us express the error around a fixed origin. With the right equivariance built into the dynamics and outputs, the local error model is much less sensitive to the current estimate being wrong.
+That fixed reference point is the key. In a usual manifold EKF, the tangent space and linearization move with the current estimate. In an *equivariant* filter, the symmetry action lets us express the error around a fixed origin. Equivariance is the consistency condition that makes this legitimate: moving the state by the symmetry and then applying the dynamics or measurement model must match applying the model first and then moving the result in the corresponding way. When that holds, covariance propagation is less tied to the filter's current guess.
 
 The runtime loop still looks like an EKF: predict the state, propagate covariance, compare predicted and observed measurements, compute a Kalman gain, and apply a correction. The difference is where the geometry enters. During prediction, the **lift** $\Lambda$ converts physical dynamics into a small motion in the group. In the attitude-direction example, the gyroscope moves the group estimate, and the direction estimate follows from the group action. During update, the Kalman correction is lifted back through the group instead of directly nudging arbitrary coordinates on the sphere.
 
