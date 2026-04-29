@@ -19,7 +19,7 @@ This post is meant as a quick tutorial introduction for GTSAM users. The foundat
 
 This is the third post in the manifold Kalman filter hierarchy series. [Part 1](/2026/03/09/manifold-kf-part1.html) introduced `ManifoldEKF`, `LieGroupEKF`, `InvariantEKF`, and `LeftLinearEKF`; [Part 2](/2026/03/17/legged-state-estimation-part2.html) showed why invariant filtering matters in legged state estimation.
 
-The **Equivariant Filter (EqF)** is the final missing piece. The `ManifoldEKF` can handle a broad range of manifold states, including `Unit3`, but its covariance propagation is tied to the current estimate. The `InvariantEKF` and `LeftLinearEKF` get the invariant-error behavior we like, where the propagated error can be much less dependent on the current estimate, but they assume the state itself is a Lie group.
+The **Equivariant Filter (EqF)** is the final missing piece. The `ManifoldEKF` can handle a broad range of manifold states, including `Unit3`, but its covariance propagation is tied to the current estimate, because the transition Jacobian is computed in the tangent space at the current linearization point. A bad estimate can therefore give you a bad local error model. The `InvariantEKF` and `LeftLinearEKF` get the invariant-error behavior we like, where the propagated error can be much less dependent on the current estimate, but they assume the state itself is a Lie group.
 
 The new `EquivariantFilter` fills the gap: it is an error-state Kalman filter where the physical state can live on a general manifold $\mathcal{M}$, while a separate symmetry group $\mathcal{G}$ acts on that state. The group action gives the filter an invariant-style error without requiring the state itself to be a group.
 
@@ -87,6 +87,8 @@ $$
 
 In the sphere example, $\xi^\circ$ might be the north pole direction, and $\hat{g}$ is a rotation that moves that reference direction to the current estimate.
 
+In the GTSAM implementation, the physical estimate is still an element of `M`, but EqF also maintains a group element `g_`; applying `g_` to `xi_ref_` recovers the current state estimate.
+
 This also gives a natural error:
 
 $$
@@ -105,14 +107,14 @@ The runtime loop still looks like an EKF: predict the state, propagate covarianc
 
 ## The GTSAM Template
 
-The generic implementation lives in [`gtsam/navigation/EquivariantFilter.h`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/EquivariantFilter.h). It is templated on $\mathcal{M}$, the physical manifold state type, and `Symmetry`, the functor that defines the group action. The class inherits from `ManifoldEKF<M>`, so it reuses the same covariance, Kalman gain, and Joseph-form update machinery from the base hierarchy. The EqF-specific part is the additional symmetry bookkeeping:
+The generic implementation lives in [`gtsam/navigation/EquivariantFilter.h`](https://github.com/borglab/gtsam/blob/develop/gtsam/navigation/EquivariantFilter.h). It is templated on $\mathcal{M}$, the physical manifold state type, and `Symmetry`, the functor that defines the group action. The class inherits from `ManifoldEKF<M>`, so it reuses the same covariance, Kalman gain, and Joseph-form update machinery from the base hierarchy. Importantly, the covariance has the dimension of `M`, not the dimension of `Symmetry::Group`: the group is not replacing the physical state with a larger Kalman state. It is used to transport the estimate and corrections in a way that respects the symmetry. The EqF-specific part is the additional symmetry bookkeeping:
 
 - `Symmetry::Group` is the internal group $\mathcal{G}$
 - `xi_ref_` is the fixed reference state $\xi^\circ$
 - `g_` is the lifted group estimate
 - `act_on_ref_(g_)` recovers the current manifold estimate
-- `Dphi0_` is the differential of the action at the identity
-- `InnovationLift_` maps a small manifold correction back to a group tangent correction
+- `Dphi0_` maps group tangent perturbations down to manifold tangent perturbations
+- `InnovationLift_` maps the EKF innovation back up to the group tangent space
 
 So, you need to provide a lot more structure than a plain `ManifoldEKF`: the physical state type, the `Symmetry` action, the lift from physical dynamics to group motion, the input and output actions needed for equivariance, and the usual process and measurement noise models. The payoff is that the filter is using the geometry of the problem rather than an arbitrary local coordinate choice.
 
