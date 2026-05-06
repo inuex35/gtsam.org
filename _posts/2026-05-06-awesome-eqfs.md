@@ -103,9 +103,9 @@ is the direct product of a rotation $R \in SO(3)$ and a strictly positive scalar
 
 ### The equivariant output approximation
 
-The **equivariant output approximation** is the EqVIO idea that improves how camera measurements are linearized. 
+Camera measurements are "equivariant" when transforming the state produces a predictable transformation of the measurement.
 
-Camera measurements are "equivariant" when transforming the state produces a predictable transformation of the measurement. As is classic for VIO systems, the camera observes a landmark and produces a bearing vector. Van Goor and Mahony prove that, with respect to the $SOT(3)$ component of their group, this measurement function is equivariant.
+EqVIO takes advantage of the **equivariant output approximation**, a general EqF construction that is available when the output map is equivariant.  As is classic for VIO systems, the camera observes a landmark and produces a bearing vector. In the paper, van Goor and Mahony show that the landmark bearing measurement is equivariant with respect to the SOT(3) symmetry, which enables this same approximation in the camera update.
 
 The equivariant output approximation can reduce camera measurement approximation error by an order of magnitude. Traditionally, EKFs use a first-order approximation of the measurement function; by exploiting the equivariance property, we can use the group structure to process input camera data with a more faithful local approximation.
 
