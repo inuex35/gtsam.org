@@ -4,9 +4,9 @@ title:  "The Manifold Kalman Filter Hierarchy, Part 4: Awesome Equivariant Filte
 ---
 
 *Authors*: [Rohan Bansal](https://rbansal.dev/academic) and [Frank Dellaert](https://dellaert.github.io)
-*GTSAM Contributors*: Jennifer Oum, Darshan Rajasekaran (ABC) and Rohan Bansal (EqVio).
-*Paper authors on whose code we based the examples*: [Alessandro Fornasier](https://scholar.google.com/citations?user=mb8ewjgAAAAJ&hl=it) and [Pieter Van Goor](https://pvangoor.github.io/).
-*Godfather of equivariant filtering*: [Robert Mahony](https://eng.anu.edu.au/people/robert-mahony).
+*GTSAM Contributors*: Jennifer Oum, Darshan Rajasekaran (ABC) and Rohan Bansal (EqVIO).
+*EqVIO paper authors*: [Pieter van Goor](https://pvangoor.github.io/) and [Robert Mahony](https://eng.anu.edu.au/people/robert-mahony).
+*ABC-EqF paper authors*: [Alessandro Fornasier](https://scholar.google.com/citations?user=mb8ewjgAAAAJ&hl=it), Yonhon Ng, Christian Brommer, Christoph Böhm, [Robert Mahony](https://eng.anu.edu.au/people/robert-mahony), and [Stephan Weiss](https://scholar.google.com/citations?user=dQmvEyUAAAAJ&hl=de).
 
 <!-- - TOC -->
 {:toc}
