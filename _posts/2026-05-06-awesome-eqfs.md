@@ -4,6 +4,9 @@ title:  "The Manifold Kalman Filter Hierarchy, Part 4: Awesome Equivariant Filte
 ---
 
 *Authors*: [Rohan Bansal](https://rbansal.dev/academic) and [Frank Dellaert](https://dellaert.github.io)
+*GTSAM Contributors*: Jennifer Oum, Darshan Rajasekaran (ABC) and Rohan Bansal (EqVio).
+*Paper authors on whose code we based the examples*: [Alessandro Fornasier](https://scholar.google.com/citations?user=mb8ewjgAAAAJ&hl=it) and [Pieter Van https://pvangoor.github.io/Goor]().
+*Godfather of equivariant filtering*: [Robert Mahony](https://eng.anu.edu.au/people/robert-mahony).
 
 <!-- - TOC -->
 {:toc}
@@ -43,17 +46,17 @@ $$
 
 Because the linearization happens around that fixed reference rather than the moving estimate, covariance propagation depends much less on whether the current guess is right.
 
-An important thing to note is that for any new EqF, we also need to supply the **lift** that turns physical dynamics into a small motion in the group, and the **equivariance conditions** that the dynamics and outputs have to satisfy. Once those are in, the actual runtime loop looks like an ordinary EKF on the group tangent space.
+Every new EqF needs two problem-specific ingredients before it can run like an ordinary EKF. We need to supply the **lift** that turns physical dynamics into a small motion in the group, and the **equivariance conditions** that the dynamics and outputs have to satisfy. Once those are in, the actual runtime loop looks like an ordinary EKF on the group tangent space.
 
-Now we will jump into two practical use cases of the EqF, in the trajectory state estimation case and the attitude estimation case.
+The rest of this post applies that EqF pattern to two practical cases: visual-inertial odometry (VIO) and attitude estimation.
 
-## EqVIO: Equivariant Visual-Inertial Odometry
+## The EqVIO: Equivariant Visual-Inertial Odometry
 
-The **EqVIO** by [Pieter van Goor and Robert Mahony](https://arxiv.org/abs/2205.01980) is the answer to a long-standing complaint about EKF-based VIO: standard filters such as MSCKF (Multi-State Constraint Kalman Filter) accumulate inconsistency because the linearization point drifts with the (possibly wrong) estimate, and the filter ends up more confident than its actual error warrants. EqVIO removes that source of inconsistency by construction, using equivariance.
+The **EqVIO** filter by [Pieter van Goor and Robert Mahony](https://arxiv.org/abs/2205.01980) is the answer to a long-standing complaint about EKF-based VIO: standard filters such as MSCKF (Multi-State Constraint Kalman Filter) accumulate inconsistency because the linearization point drifts with the (possibly wrong) estimate, and the filter ends up more confident than its actual error warrants. The EqVIO removes that source of inconsistency by construction, using equivariance.
 
 ### The VIO state
 
-At every timestep, EqVIO's physical state is composed of:
+The EqVIO represents VIO with a manifold state containing pose, velocity, IMU biases, camera extrinsics, and tracked landmarks. At every timestep, its physical state is composed of:
 
 1. body pose $P \in SE(3)$,
 2. body linear velocity $v \in \mathbb{R}^3$,
@@ -75,13 +78,13 @@ Note that the state is *not* a Lie group, but rather a manifold, which is exactl
 
 ### The symmetry group
 
-EqVIO's contribution is identifying a symmetry group $\mathcal{G}$ that *acts* on this composite VIO state. The group is built as a product Lie group whose factors mirror the state itself:
+The key construction in the EqVIO is a symmetry group $\mathcal{G}$ that *acts* on the full composite VIO state. The group is built as a product Lie group whose factors mirror the state itself:
 
 $$
 \mathcal{G} = SE_2(3) \ltimes \mathbb{R}^6 \times SE(3) \times \prod_i \mathrm{SOT}(3).
 $$
 
-The intuition behind the pieces:
+Each group factor corresponds to a specific part of the VIO state:
 
 - **$SE_2(3)$**, the "extended pose" group, jointly handles attitude, position, and velocity.
 - **$\mathbb{R}^6$** for the two IMU biases, which the semi-direct product couples back into the inertial frame.
@@ -90,7 +93,7 @@ The intuition behind the pieces:
 
 The action $\phi$ of $\mathcal{G}$ on the state is then the natural one inherited from each factor.
 
-**What is $\mathrm{SOT}(3)$ though?** Some readers may be unfamiliar with this group, as it is not a commonly defined group in GTSAM, but rather specific to the EqVIO implementation. Concretely, 
+**$\mathrm{SOT}(3)$ is the rotation-and-positive-scale group that the EqVIO uses to encode each landmark's monocular bearing-depth ambiguity.** Some readers may be unfamiliar with this group, as it is not a commonly defined group in GTSAM, but rather specific to the EqVIO implementation. Concretely, 
 
 $$
 \mathrm{SOT}(3) = SO(3) \times \mathbb{R}_{>0}
@@ -100,27 +103,27 @@ is the direct product of a rotation $R \in SO(3)$ and a strictly positive scalar
 
 ### The equivariant output approximation
 
-One of the more important practical ideas in the EqVIO paper is the **equivariant output approximation** for the camera measurement. 
+The **equivariant output approximation** is the EqVIO idea that improves how camera measurements are linearized. 
 
-We can say that the camera measurement is "equivariant" if applying a transformation to the state results in a predictable transformation of the measurement. As is classic for VIO systems, the camera observes a landmark and produces a bearing vector. Van Goor and Mahony prove that, with respect to the $SOT(3)$ component of their group, this measurement function is equivariant.
+Camera measurements are "equivariant" when transforming the state produces a predictable transformation of the measurement. As is classic for VIO systems, the camera observes a landmark and produces a bearing vector. Van Goor and Mahony prove that, with respect to the $SOT(3)$ component of their group, this measurement function is equivariant.
 
-A significant side-effect is that this largely improves how the filter processes input camera data. Traditionally, EKFs use a first-order approximation of the measurement function; by exploiting the equivariance property, we can use the group structure to apply an equivariant output approximation and reduce the measurement error by an order of magnitude.
+The equivariant output approximation can reduce camera measurement approximation error by an order of magnitude. Traditionally, EKFs use a first-order approximation of the measurement function; by exploiting the equivariance property, we can use the group structure to process input camera data with a more faithful local approximation.
 
-Additionally, this proof also justifies the inverse-depth parameterization. It is [well known](https://en.wikipedia.org/wiki/Inverse_depth_parametrization) that representing landmarks by inverse distance can improve stability of a filter. The authors present a polar parameterization derived from $\mathrm{SOT}(3)$ that can act similar to inverse-depth but also further minimize linearization error. Currently, this polar parameterization is not implemented into GTSAM's EqVIO, but it is a near-future change on the roadmap.
+The same symmetry argument also motivates inverse-depth-style landmark parameterizations. It is [well known](https://en.wikipedia.org/wiki/Inverse_depth_parametrization) that representing landmarks by inverse distance can improve stability of a filter. The authors present a polar parameterization derived from $\mathrm{SOT}(3)$ that can act similar to inverse-depth but also further minimize linearization error. Currently, this polar parameterization is not implemented into GTSAM's EqVIO implementation, but it is a near-future change on the roadmap.
 
 ### What the runtime loop looks like
 
-After reading the first three blog posts, the following steps are probably familiar:
+The EqVIO runtime loop has the familiar predict-update shape, with extra feature management for a changing landmark set:
 
 1. **Predict.** IMU frames drive a small motion in the group via the lift.
 2. **Update.** For each tracked feature in a new image frame, predict the normalized image coordinate, compare to the observation, form the equivariant innovation, and apply a correction in the tangent space.
 3. **Manage features.** Add new landmarks for unseen features, drop features that fall out of the image, and keep the covariance block consistent with the live landmark set.
 
-That last step is new, but it is essential bookkeeping for letting the VIO filter run for as long as possible on a real sequence without the state vector blowing up.
+Feature management is essential bookkeeping for running the EqVIO filter on real sequences without the state vector blowing up. This bookkeeping step is new compared with the smaller examples in the previous posts.
 
 ## The EqVIO in GTSAM
 
-GTSAM's implementation lives in `gtsam_unstable/navigation`:
+GTSAM exposes the EqVIO through three implementation files in `gtsam_unstable/navigation`:
 
 - [`EqVIOState.h`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/navigation/EqVIOState.h): the manifold state described above, including the dynamic landmark list.
 - [`EqVIOSymmetry.h`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/navigation/EqVIOSymmetry.h): the semi-direct-product group $\mathcal{G}$, its action on `EqVIOState`, and the lift used during prediction.
@@ -128,7 +131,7 @@ GTSAM's implementation lives in `gtsam_unstable/navigation`:
 
 `EqVIOFilter` is built on the `EquivariantFilter` template that [Part 3](https://gtsam.org/2026/04/28/equivariant.html) introduced. `xi_ref_` is the EqVIO reference state, and `g_` is the lifted group estimate that the IMU drives.
 
-The filter is also made available in Python through `gtsam_unstable.eqvio` bindings, which mirrors the C++ API very closely. The below snippet walks through the initialization and propagation of the filter, which is described in more detail in the [AwesomeEqF notebook](https://borglab.github.io/AwesomeEqF/notebooks/eqvio-example/)!
+Python users can access the same EqVIO filter through `gtsam_unstable.eqvio` bindings that closely mirror the C++ API. The snippet below walks through the initialization and propagation of the filter, which is described in more detail in the [AwesomeEqF notebook](https://borglab.github.io/AwesomeEqF/notebooks/eqvio-example/)!
 
 ```python
 import gtsam, gtsam_unstable
@@ -149,11 +152,11 @@ for features, R in vision_stream:  # features: dict[int, np.ndarray(2,)]
 
 The full Python walkthrough lives [here](https://borglab.github.io/AwesomeEqF/notebooks/eqvio-example/), as a notebook on AwesomeEqF. Take a look!
 
-## ABC-EqF: Attitude, Bias, Calibration
+## The ABC-EqF: Attitude, Bias, Calibration
 
-In addition to the EqVIO filter, we will also briefly discuss the **ABC-EqF** by [Fornasier, Ng, Brommer, Böhm, Mahony, and Weiss](https://arxiv.org/abs/2209.12038), which is a paper covering equivariant filter design for attitude state estimation.
+The ABC-EqF applies the same equivariant-filter design idea to attitude estimation with bias and calibration. The filter comes from [Fornasier, Ng, Brommer, Böhm, Mahony, and Weiss](https://arxiv.org/abs/2209.12038), whose paper covers equivariant filter design for attitude state estimation.
 
-The state stacks three pieces:
+The ABC-EqF state stacks three attitude-estimation quantities:
 
 - attitude $R \in SO(3)$,
 - gyroscope bias $b \in \mathbb{R}^3$,
@@ -161,13 +164,13 @@ The state stacks three pieces:
 
 The classical EKF treats bias and calibration as ordinary linear states tacked onto attitude, but the ABC-EqF instead builds a single symmetry group $SO(3) \times \mathbb{R}^3 \times SO(3)$ that natively contains the bias and calibration as part of the geometric structure, so the bias-aware error and the calibration-aware error transport correctly under the group action. The result is better linearization behavior, faster bias convergence, and an estimator whose consistency does not depend on the bias estimate being good.
 
-In GTSAM this is implemented as the [`ABCEquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h) in `gtsam_unstable`. A complete C++ example lives at [`AbcEquivariantFilterExample.cpp`](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), and the AwesomeEqF notebook [here](https://borglab.github.io/AwesomeEqF/notebooks/abc-eqf-example/) walks through that code in Python with interactive plots for the attitude, bias, and calibration errors over time.
+GTSAM implements the ABC-EqF as [`ABCEquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h) in `gtsam_unstable`. A complete C++ example lives at [`AbcEquivariantFilterExample.cpp`](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), and the AwesomeEqF notebook [here](https://borglab.github.io/AwesomeEqF/notebooks/abc-eqf-example/) walks through that code in Python with interactive plots for the attitude, bias, and calibration errors over time.
 
 ## Takeaway
 
-The EqVIO filter is the most recent application of the EqF machinery from [Part 3](https://gtsam.org/2026/04/28/equivariant.html), and it is now usable from Python through GTSAM. 
+The EqVIO and the ABC-EqF show that the EqF machinery from [Part 3](https://gtsam.org/2026/04/28/equivariant.html) now reaches practical robotics estimators in GTSAM. The EqVIO filter is the most recent application, and it is now usable from Python through GTSAM. 
 
-Additionally, [AwesomeEqF](https://borglab.github.io/AwesomeEqF/) is meant to grow with the field! If you have a paper, a notebook, or a write-up that fits, please open a pull request.
+[AwesomeEqF](https://borglab.github.io/AwesomeEqF/) is meant to grow with the field. If you have a paper, a notebook, or a write-up that fits, please open a pull request.
 
 ## Further Reading
 
