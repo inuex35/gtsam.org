@@ -11,18 +11,22 @@ title:  "The Manifold Kalman Filter Hierarchy, Part 4: Awesome Equivariant Filte
 <!-- - TOC -->
 {:toc}
 
+<figure class="center" style="width: 100%; max-width: 900px;">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="/assets/images/awesome-eqf/AwesomeEqF-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="/assets/images/awesome-eqf/AwesomeEqF-light.png">
+    <img src="/assets/images/awesome-eqf/AwesomeEqF-light.png"
+      alt="AwesomeEqF logo showing cursive text in the symmetry group reflected onto a curved manifold surface, with a mapping arrow labeled phi."
+      style="width: 100%;" />
+  </picture>
+</figure>
+<br />
+
 In [Part 3](https://gtsam.org/2026/04/28/equivariant.html) of the Manifold Filter Hierarchy, we introduced the `EquivariantFilter` template in GTSAM and walked through the geometry that makes EqF useful: a state on a manifold $\mathcal{M}$, a symmetry group $\mathcal{G}$ acting on it, and an error expressed around a fixed reference state instead of the current estimate. In that post, we discussed a very simple toy problem of an attitude-on-a-sphere.
 
 In today's post, we consider more complex problems which can be tackled using an EqF, such as VIO (Visual-Inertial-Odometry) and ABC (Attitude-Bias-Calibration). In tandem, we also announce **[AwesomeEqF](https://borglab.github.io/AwesomeEqF/)**: a community-curated collection of papers and runnable notebooks for equivariant filtering, built around GTSAM.
 
 ## What is AwesomeEqF?
-
-<figure class="center" style="width: 100%; max-width: 700px;">
-  <img src="/assets/images/awesome-eqf/header_figure.png"
-    alt="AwesomeEqF header figure."
-    style="width: 100%;" />
-</figure>
-<br />
 
 AwesomeEqF is a [website](https://borglab.github.io/AwesomeEqF/) (and [repo](https://github.com/borglab/AwesomeEqF)) containing:
 
