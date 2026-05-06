@@ -103,9 +103,9 @@ is the direct product of a rotation $R \in SO(3)$ and a strictly positive scalar
 
 ### The equivariant output approximation
 
-The **equivariant output approximation** is the EqVIO idea that improves how camera measurements are linearized. 
+Camera measurements are "equivariant" when transforming the state produces a predictable transformation of the measurement.
 
-Camera measurements are "equivariant" when transforming the state produces a predictable transformation of the measurement. As is classic for VIO systems, the camera observes a landmark and produces a bearing vector. Van Goor and Mahony prove that, with respect to the $SOT(3)$ component of their group, this measurement function is equivariant.
+EqVIO takes advantage of the **equivariant output approximation**, a general EqF construction that is available when the output map is equivariant.  As is classic for VIO systems, the camera observes a landmark and produces a bearing vector. In the paper, van Goor and Mahony show that the landmark bearing measurement is equivariant with respect to the SOT(3) symmetry, which enables this same approximation in the camera update.
 
 The equivariant output approximation can reduce camera measurement approximation error by an order of magnitude. Traditionally, EKFs use a first-order approximation of the measurement function; by exploiting the equivariance property, we can use the group structure to process input camera data with a more faithful local approximation.
 
@@ -162,11 +162,21 @@ The ABC-EqF state stacks three attitude-estimation quantities:
 
 - attitude $R \in SO(3)$,
 - gyroscope bias $b \in \mathbb{R}^3$,
-- and a sensor calibration rotation $S \in SO(3)$ that aligns a reference direction sensor (e.g. magnetometer) with the body frame.
+- and a sensor calibration rotation $C \in SO(3)$ that aligns a reference direction sensor (e.g. magnetometer) with the body frame
 
-The classical EKF treats bias and calibration as ordinary linear states tacked onto attitude, but the ABC-EqF instead builds a single symmetry group $SO(3) \times \mathbb{R}^3 \times SO(3)$ that natively contains the bias and calibration as part of the geometric structure, so the bias-aware error and the calibration-aware error transport correctly under the group action. The result is better linearization behavior, faster bias convergence, and an estimator whose consistency does not depend on the bias estimate being good.
+Note that the formulation generalizes to $N$ direction sensors with $n \leq N$ calibration states, so if there are more than 1 uncalibrated sensor, the last item in the state would be $SO(3)^n$.
 
-GTSAM implements the ABC-EqF as [`ABCEquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h) in `gtsam_unstable`. A complete C++ example lives at [`AbcEquivariantFilterExample.cpp`](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), and the AwesomeEqF notebook [here](https://borglab.github.io/AwesomeEqF/notebooks/abc-eqf-example/) walks through that code in Python with interactive plots for the attitude, bias, and calibration errors over time.
+The classical EKF treats bias and calibration as ordinary linear states tacked onto attitude, but the ABC-EqF instead uses the symmetry group
+
+$$
+\mathcal{G} = (SO(3) \ltimes \mathfrak{so}(3)) \times SO(3)^n
+$$
+
+so the attitude and gyro-bias live in a coupled semi-direct-product geometry (the first two terms) while the calibration rotation carries its own $SO(3)$ factor, where $n$ is the number of sensors with extrinsic calibration states to be estimated. The result is better linearization behavior, faster bias convergence, and an estimator whose consistency does not depend on the bias estimate being good.
+
+In GTSAM this is implemented as the [`ABCEquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h) in `gtsam_unstable`; there, the $(SO(3) \ltimes \mathfrak{so}(3))$ factor is represented using `Pose3`, leveraging the Lie-group isomorphism $(SO(3) \ltimes \mathfrak{so}(3)) \cong SE(3)$. 
+
+A complete C++ example lives at [`AbcEquivariantFilterExample.cpp`](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), and the AwesomeEqF notebook [here](https://borglab.github.io/AwesomeEqF/notebooks/abc-eqf-example/) walks through that code in Python with interactive plots for the attitude, bias, and calibration errors over time.
 
 ## Takeaway
 
