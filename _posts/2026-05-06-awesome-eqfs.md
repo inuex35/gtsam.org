@@ -5,7 +5,7 @@ title:  "The Manifold Kalman Filter Hierarchy, Part 4: Awesome Equivariant Filte
 
 *Authors*: [Rohan Bansal](https://rbansal.dev/academic) and [Frank Dellaert](https://dellaert.github.io)
 *GTSAM Contributors*: Jennifer Oum, Darshan Rajasekaran (ABC) and Rohan Bansal (EqVio).
-*Paper authors on whose code we based the examples*: [Alessandro Fornasier](https://scholar.google.com/citations?user=mb8ewjgAAAAJ&hl=it) and [Pieter Van https://pvangoor.github.io/Goor]().
+*Paper authors on whose code we based the examples*: [Alessandro Fornasier](https://scholar.google.com/citations?user=mb8ewjgAAAAJ&hl=it) and [Pieter Van Goor](https://pvangoor.github.io/).
 *Godfather of equivariant filtering*: [Robert Mahony](https://eng.anu.edu.au/people/robert-mahony).
 
 <!-- - TOC -->
@@ -152,9 +152,11 @@ for features, R in vision_stream:  # features: dict[int, np.ndarray(2,)]
 
 The full Python walkthrough lives [here](https://borglab.github.io/AwesomeEqF/notebooks/eqvio-example/), as a notebook on AwesomeEqF. Take a look!
 
+This paper-to-code-to-notebook path is the main reason AwesomeEqF exists. Equivariant filtering papers often introduce useful geometry, but it can be hard to see how that geometry turns into a working estimator on data. AwesomeEqF is meant to close that gap by pairing the paper trail with GTSAM implementations and runnable examples, so a reader can move from the idea to a filter they can inspect, modify, and run.
+
 ## The ABC-EqF: Attitude, Bias, Calibration
 
-The ABC-EqF applies the same equivariant-filter design idea to attitude estimation with bias and calibration. The filter comes from [Fornasier, Ng, Brommer, Böhm, Mahony, and Weiss](https://arxiv.org/abs/2209.12038), whose paper covers equivariant filter design for attitude state estimation.
+We also added a second example on the website. The "ABC-EqF" applies the same equivariant-filter design idea to attitude estimation with bias and calibration. The filter comes from [Fornasier, Ng, Brommer, Böhm, Mahony, and Weiss](https://arxiv.org/abs/2209.12038), whose paper covers equivariant filter design for attitude state estimation.
 
 The ABC-EqF state stacks three attitude-estimation quantities:
 
