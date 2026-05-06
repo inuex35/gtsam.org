@@ -21,7 +21,7 @@ In today's post, we consider more complex problems which can be made somewhat si
 </figure>
 <br />
 
-AwesomeEqF is [website]() (and [repo](https://github.com/borglab/AwesomeEqF)) containing:
+AwesomeEqF is [website](https://borglab.github.io/AwesomeEqF/) (and [repo](https://github.com/borglab/AwesomeEqF)) containing:
 
 - A reading list of papers, organized from foundational invariant-observer papers through to recent EqF architectures
 - A growing set of notebooks that utilize GTSAM's EqF filter implementation and perform on real data
@@ -128,7 +128,7 @@ GTSAM's implementation lives in `gtsam_unstable/navigation`:
 
 `EqVIOFilter` is built on the `EquivariantFilter` template that [Part 3](https://gtsam.org/2026/04/28/equivariant.html) introduced. `xi_ref_` is the EqVIO reference state, and `g_` is the lifted group estimate that the IMU drives.
 
-The filter is also made available in Python through `gtsam_unstable.eqvio` bindings, which mirrors the C++ API very closely. The below snippet walks through the initialization and propagation of the filter, whcih is described in more detail in the [AwesomeEqF notebook]()!
+The filter is also made available in Python through `gtsam_unstable.eqvio` bindings, which mirrors the C++ API very closely. The below snippet walks through the initialization and propagation of the filter, whcih is described in more detail in the AwesomeEqF notebook!
 
 ```python
 import gtsam, gtsam_unstable
@@ -147,7 +147,7 @@ for features, R in vision_stream:  # features: dict[int, np.ndarray(2,)]
     filter.update(features, camera, R)
 ```
 
-The full Python walkthrough lives [here](), on AwesomeEqF. Take a look!
+The full Python walkthrough lives [here](https://borglab.github.io/AwesomeEqF/notebooks/eqvio-example/), as a notebook on AwesomeEqF. Take a look!
 
 ## ABC-EqF: Attitude, Bias, Calibration
 
@@ -161,7 +161,7 @@ The state stacks three pieces:
 
 The classical EKF treats bias and calibration as ordinary linear states tacked onto attitude, but the ABC-EqF instead builds a single symmetry group $SO(3) \times \mathbb{R}^3 \times SO(3)$ that natively contains the bias and calibration as part of the geometric structure, so the bias-aware error and the calibration-aware error transport correctly under the group action. The result is better linearization behavior, faster bias convergence, and an estimator whose consistency does not depend on the bias estimate being good.
 
-In GTSAM this is implemented as the [`ABCEquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h) in `gtsam_unstable`. A complete C++ example lives at [`AbcEquivariantFilterExample.cpp`](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), and the AwesomeEqF notebook [here]() walks through that code in Python with interactive plots for the attitude, bias, and calibration errors over time.
+In GTSAM this is implemented as the [`ABCEquivariantFilter`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/ABCEquivariantFilter.h) in `gtsam_unstable`. A complete C++ example lives at [`AbcEquivariantFilterExample.cpp`](https://github.com/borglab/gtsam/blob/develop/examples/AbcEquivariantFilterExample.cpp), and the AwesomeEqF notebook [here](https://borglab.github.io/AwesomeEqF/notebooks/abc-eqf-example/) walks through that code in Python with interactive plots for the attitude, bias, and calibration errors over time.
 
 ## Takeaway
 
@@ -176,5 +176,5 @@ Additionally, AwesomeEqF is meant to grow with the field! If you have a paper, a
 - ["Equivariant Symmetries for Aided Inertial Navigation"](https://arxiv.org/abs/2407.14297), Fornasier (dissertation).
 - AwesomeEqF site: [borglab.github.io/AwesomeEqF](https://borglab.github.io/AwesomeEqF/).
 - GTSAM EqVIO source: [`gtsam_unstable/navigation/EqVIOFilter.h`](https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/navigation/EqVIOFilter.h).
-- AwesomeEqF EqVIO notebook: [`02_eqvio_example.ipynb`](https://github.com/borglab/AwesomeEqF/blob/main/notebooks/02_eqvio_example.ipynb).
-- AwesomeEqF ABC-EqF notebook: [`01_abc_eqf_example.ipynb`](https://github.com/borglab/AwesomeEqF/blob/main/notebooks/01_abc_eqf_example.ipynb).
+- AwesomeEqF EqVIO notebook source: [`02_eqvio_example.ipynb`](https://github.com/borglab/AwesomeEqF/blob/master/notebooks/02_eqvio_example.ipynb).
+- AwesomeEqF ABC-EqF notebook source: [`01_abc_eqf_example.ipynb`](https://github.com/borglab/AwesomeEqF/blob/master/notebooks/01_abc_eqf_example.ipynb).
