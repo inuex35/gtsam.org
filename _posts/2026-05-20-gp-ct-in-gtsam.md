@@ -60,7 +60,16 @@ We can now use the new GTSAM functionalities to additionally query the mean and 
 </figure>
 <br />
 
-Finally, we are not restricted to measurements, or any other factors, that align exactly with the optimization states at discrete times. Here, we can use the wrapper factor `WnoaInterpFactor`, which converts a factor related to a state at an arbitrary time into a factor depending on the two neighboring states in the graph, again motivated by the factor-graph elimination analogy. GTSAM then optimizes the trajectory while correctly accounting for the exact time association via GP interpolation. The example below shows measurements in red at arbitrary times. This is especially useful when measurements are asynchronous or arrive at high rates. We only need to include a subset of states at discrete times, for example at a lower rate such as 10 Hz, and rely on GP interpolation to relate them to measurements or other factors at arbitrary times. This effectively enables interpolation during the solve rather than only post-solve.
+Finally, we are not restricted to measurements, or any other factors, that align exactly with the optimization states at discrete times. 
+
+As illustrated in the figure below, suppose we receive a measurement at an arbitrary time $\tau$. In a traditional setup (left), we would need to insert a new state $\mathbf{x}\_\tau$ into the optimization graph. Instead, we can conceptually eliminate $\mathbf{x}\_\tau$ using the GP motion model. This elimination produces two distinct components (right): 
+
+1. A conditional density $p(\mathbf{x}\_\tau \mid \mathbf{x}\_k, \mathbf{x}\_{k-1})$ representing the eliminated state $\mathbf{x}\_\tau$ (shown in gray).
+2. A new measurement factor $\phi\_y(\mathbf{x}\_{k-1}, \mathbf{x}\_k)$ that depends solely on the two neighboring bounding states, $\mathbf{x}\_{k-1}$ and $\mathbf{x}\_k$.
+
+In GTSAM, we implement this mechanism using the wrapper factor `WnoaInterpFactor`. It converts a factor at an arbitrary time into this neighboring-state factor, allowing GTSAM to optimize the trajectory while correctly accounting for exact time associations via GP interpolation. 
+
+The bottom of the figure demonstrates this in practice. This formulation is especially useful when measurements are asynchronous or arrive at high rates (shown in red). Rather than including states in the graph for every single measurement, we only need to optimize a subset of discrete states (dark blue) at a lower rate, such as 10 Hz. The wrapper factor relies on GP interpolation to correctly relate the asynchronous measurements to the discrete states, effectively enabling exact continuous-time interpolation during the solve rather than only post-solve.
 
 <figure class="center" style="width: 100%; max-width: 820px;">
   <img src="/assets/images/gp-ct/asynchronous-traj.png"
@@ -78,7 +87,7 @@ The integration of GP-based continuous-time estimation into GTSAM provides a fle
 
 For a deeper dive into the theory and broader context of these methods, we recommend reading our [recent paper](https://arxiv.org/abs/2605.09073), "Smoothing Out the Edges: Continuous-Time Estimation with Gaussian Process Motion Priors on Factor Graphs".
 
-You can explore the example from this blogpost in our [Colab Notebook](https://colab.research.google.com/drive/17vXoE6zV7W6yL-5P4u7v7_7-1jK-X5yR). Please also visit our [GitHub Repository](https://github.com/utiasASRL/2025-fnt-ctfg) for further real-world robotics examples. These specifically include:
+You can find more details on the example used in this blogpost in our [GTSAM Example Notebook](https://borglab.github.io/gtsam/gaussianprocesswnoainterpolationse3/) and interactive [Google Colab Notebook](https://colab.research.google.com/github/borglab/gtsam/blob/develop/python/gtsam/examples/GaussianProcessWnoaInterpolationSE3.ipynb). Please also visit our [GitHub Repository](https://github.com/utiasASRL/2025-fnt-ctfg) for further real-world robotics examples. These specifically include:
 
 1.  **1D (Giant Glass of Milk)**: A mobile robot driving back and forth in a straight line, demonstrating basic smoothing.
 2.  **2D (Lost in the Woods)**: SLAM and localization for a wheeled robot using asynchronous landmark observations, showing problem-size reduction via aggressive interpolation.
