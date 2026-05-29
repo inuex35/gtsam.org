@@ -63,7 +63,25 @@ The diagram below illustrates how these factors fit into a factor graph for tigh
 
 By using the lever-arm factor variants, the rover state becomes a `Pose3` in the navigation frame, which can be directly connected to GTSAM's IMU pre-integration factors. This tightly-coupled approach uses raw satellite measurements directly. The full covariance structure between position, velocity, and biases is maintained throughout the graph, and when buildings block satellite signals in urban canyons, the IMU bridges the gap while GNSS constrains long-term drift.
 
-In practice, achieving centimeter-level accuracy requires additional infrastructure beyond the GTSAM factors themselves: satellite selection, cycle-slip detection, multipath mitigation, and integer ambiguity resolution (typically via the LAMBDA algorithm). Our implementation uses [cssrlib-numba](https://github.com/inuex35/cssrlib-numba) for these observation-modeling tasks. We evaluated the tightly-coupled system on the [PPC-Dataset](https://github.com/taroz/PPC-Dataset), an open dataset of urban driving in Tokyo and Nagoya, and achieved centimeter-level accuracy during ambiguity-fixed epochs.
+In practice, achieving centimeter-level accuracy requires additional infrastructure beyond the GTSAM factors themselves: satellite selection, cycle-slip detection, multipath mitigation, and integer ambiguity resolution (typically via the LAMBDA algorithm). Our implementation uses [cssrlib-numba](https://github.com/inuex35/cssrlib-numba) for these observation-modeling tasks.
+
+## Results on PPC-Dataset
+
+We evaluated the tightly-coupled system on the Tokyo sequences of the [PPC-Dataset](https://github.com/taroz/PPC-Dataset), an open dataset of urban driving in Japan. Tokyo's dense urban canyons present a particularly challenging environment for GNSS positioning: tall buildings block direct line-of-sight to many satellites, and reflections produce multipath that corrupts both pseudorange and carrier-phase observations.
+
+The evaluation uses the lever-arm DD factors together with `CombinedImuFactor`, non-holonomic constraint factors, and integer ambiguity variables resolved via LAMBDA with fix-and-hold. The graph is solved incrementally with `IncrementalFixedLagSmoother`.
+
+<figure class="center" style="width: 100%; max-width: 820px;">
+  <img src="/assets/images/rtk-gnss/tokyo-result.png"
+    alt="Trajectory results on three Tokyo urban driving sequences from the PPC-Dataset."
+    style="width: 100%;" />
+  <figcaption>Trajectory estimation results on three Tokyo urban driving sequences from the PPC-Dataset. Top row: estimated trajectories with ground truth (green), float solutions (red), and ambiguity-fixed solutions (blue). Bottom row: trajectories colored by 3D position error (clipped at 0.5 m).</figcaption>
+</figure>
+<br />
+
+The three runs achieve **49.5--60.8% fix rates** and **56.7--69.9% of epochs within 50 cm** error. Fixed epochs are mostly accurate to a few centimeters, but occasional incorrect fixes inflate the RMS to 0.21--0.81 m.
+
+With GNSS and IMU alone, the estimate drifts during long GNSS outages (under overpasses or in tunnels). Adding LiDAR or wheel odometry factors on the same poses keeps the estimate stable through these gaps.
 
 ## Takeaway
 
