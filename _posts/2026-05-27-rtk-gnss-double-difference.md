@@ -42,10 +42,9 @@ where $\Phi$ is the carrier-phase observable in meters, $\lambda$ is the carrier
 
 GTSAM's `navigation` module now includes four double-difference factors along with shared helpers, all contributed in [PR #2502](https://github.com/borglab/gtsam/pull/2502).
 
-For each satellite pair, the user adds a **pseudorange factor** and a **carrier-phase factor** to the graph. The pseudorange factor is a unary factor on the rover position, while the carrier-phase factor additionally connects to ambiguity variables $N$ that persist across epochs (as long as no cycle slip occurs). Both come in two flavors:
+For each satellite pair, the user adds a **pseudorange factor** and a **carrier-phase factor** to the graph. The pseudorange factor is a unary factor on the rover position, while the carrier-phase factor additionally connects to ambiguity variables $N$ that persist across epochs (as long as no cycle slip occurs).
 
-* The **basic variants** (`DoubleDifferencePseudorangeFactor`, `DoubleDifferenceCarrierPhaseFactor`) take a `Point3` antenna position in ECEF directly.
-* The **lever-arm variants** (`DoubleDifferencePseudorangeFactorArm`, `DoubleDifferenceCarrierPhaseFactorArm`) take a `Pose3` in the navigation frame plus a body-frame lever arm, computing the antenna position internally. These are essential for tightly-coupled IMU fusion, where the optimized state is the vehicle pose.
+Both come in two flavors. The basic variants (`DoubleDifferencePseudorangeFactor`, `DoubleDifferenceCarrierPhaseFactor`) take a `Point3` antenna position in ECEF directly. The lever-arm variants (`DoubleDifferencePseudorangeFactorArm`, `DoubleDifferenceCarrierPhaseFactorArm`) take a `Pose3` in the navigation frame plus a body-frame lever arm, computing the antenna position internally — these are essential for tightly-coupled IMU fusion, where the optimized state is the vehicle pose.
 
 A shared helper, `gnss::DoubleDifferenceData`, bundles the rover/base observations and satellite positions for a given satellite pair and provides the Sagnac-corrected geometric range model with Jacobians. This keeps the individual factors thin: the pseudorange factor simply evaluates the model-minus-observation residual, and the carrier-phase factor adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ ambiguity term on top.
 
