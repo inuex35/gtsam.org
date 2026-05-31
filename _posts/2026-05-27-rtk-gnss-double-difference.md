@@ -48,7 +48,19 @@ For each satellite pair, the user adds a **pseudorange factor** and a **carrier-
 * **Lever‑arm** (`DoubleDifferencePseudorangeFactorArm`, `DoubleDifferenceCarrierPhaseFactorArm`) take a `Pose3` in the navigation frame plus a body-frame lever arm, computing the antenna position internally. These are essential for tightly-coupled IMU fusion, where the optimized state is the vehicle pose.
 {: style="text-align: left"}
 
-A shared helper, `gnss::DoubleDifferenceData`, bundles the rover/base observations and satellite positions for a given satellite pair and provides the Sagnac-corrected geometric range model with Jacobians. This keeps the individual factors thin: the pseudorange factor simply evaluates the model-minus-observation residual, and the carrier-phase factor adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ ambiguity term on top.
+A shared helper, `gnss::DoubleDifferenceData`, bundles the rover/base observations and satellite positions for a given satellite pair and provides the Sagnac-corrected geometric range model $\Delta\nabla\rho(\cdot)$ with Jacobians. This keeps the individual factors thin. The **pseudorange factor** is *unary* in the rover antenna position $\mathbf{x}$ and simply evaluates the model-minus-observation residual:
+
+$$
+e_P(\mathbf{x}) = \Delta\nabla\rho(\mathbf{x}) - \Delta\nabla\tilde{P}
+$$
+
+The **carrier-phase factor** is *binary*, connecting the rover position $\mathbf{x}$ to the two satellite ambiguities $N_\text{ref}$ and $N_\text{target}$, and adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ term on top:
+
+$$
+e_\Phi(\mathbf{x}, N_\text{ref}, N_\text{target}) = \Delta\nabla\rho(\mathbf{x}) + \lambda \cdot (N_\text{ref} - N_\text{target}) - \Delta\nabla\tilde{\Phi}
+$$
+
+where $\Delta\nabla\tilde{P}$ and $\Delta\nabla\tilde{\Phi}$ are the double-differenced pseudorange and carrier-phase observations. For the lever-arm variants the state $\mathbf{x}$ is a `Pose3` and the antenna position is obtained from the pose and body-frame lever arm before the same residual is evaluated.
 
 GTSAM treats each $N$ as a continuous variable during optimization (the "float" solution). Integer fixing is done outside the graph: at each epoch the float estimates and covariance are handed to the LAMBDA algorithm, which searches for the most likely integer vector. Validated fixes are then enforced in one of two ways (fix-and-hold): either a tight prior factor is added on the corresponding $N$ variables, or the integer values are substituted as constants inside the carrier-phase factors so that $N$ no longer appears as a variable at all. A fixed ambiguity is held until a cycle slip on that satellite invalidates it, at which point the corresponding $N$ is reset and re-estimated as a float.
 
