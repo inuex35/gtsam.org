@@ -28,7 +28,7 @@ $$
 \Delta\nabla P = (\rho_r^j - \rho_r^i) - (\rho_b^j - \rho_b^i) + \epsilon_{\Delta\nabla P}
 $$
 
-where $i$ is the reference satellite, $j$ is the target satellite, $r$ is the rover, $b$ is the base station, and $\epsilon_{\Delta\nabla P}$ is the double-differenced noise. The result is a measurement that depends almost entirely on the rover position and geometry. The reference satellite is typically chosen as one with a high elevation angle and strong signal strength, since it is shared by every double difference in the epoch and is least affected by multipath and atmospheric error.
+where $i$ is the reference satellite, $j$ is the target satellite, $r$ is the rover, $b$ is the base station, and $\epsilon_{\Delta\nabla P}$ is the double-differenced noise. The result is a measurement that depends almost entirely on the rover position and geometry. A reference satellite is chosen *per constellation* (GPS, Galileo, BeiDou, QZSS, ...), since double differences are only formed between satellites of the same system that share a common time reference; mixing constellations would leave inter-system biases uncancelled. Within each system the reference is typically the satellite with a high elevation angle and strong signal strength, since it is shared by every double difference for that constellation in the epoch and is least affected by multipath and atmospheric error.
 
 For carrier-phase observations, the double-difference of the phase measurement $\Phi$ is:
 
