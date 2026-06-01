@@ -54,7 +54,7 @@ $$
 e_P(\mathbf{x}) = \Delta\nabla\rho(\mathbf{x}) - \Delta\nabla\tilde{P}
 $$
 
-The **carrier-phase factor** is *binary*, connecting the rover position $\mathbf{x}$ to the two satellite ambiguities $N_\text{ref}$ and $N_\text{target}$, and adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ term on top:
+The **carrier-phase factor** is *ternary*, connecting the rover position $\mathbf{x}$ to the two satellite ambiguities $N_\text{ref}$ and $N_\text{target}$, and adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ term on top:
 
 $$
 e_\Phi(\mathbf{x}, N_\text{ref}, N_\text{target}) = \Delta\nabla\rho(\mathbf{x}) + \lambda \cdot (N_\text{ref} - N_\text{target}) - \Delta\nabla\tilde{\Phi}
