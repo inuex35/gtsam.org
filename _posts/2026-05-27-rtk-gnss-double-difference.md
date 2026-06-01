@@ -28,7 +28,7 @@ $$
 \Delta\nabla P = (\rho_r^j - \rho_r^i) - (\rho_b^j - \rho_b^i) + \epsilon_{\Delta\nabla P}
 $$
 
-where $i$ is the reference satellite, $j$ is the target satellite, $r$ is the rover, $b$ is the base station, and $\epsilon_{\Delta\nabla P}$ is the double-differenced noise. The result is a measurement that depends almost entirely on the rover position and geometry.
+where $i$ is the reference satellite, $j$ is the target satellite, $r$ is the rover, $b$ is the base station, and $\epsilon_{\Delta\nabla P}$ is the double-differenced noise. The result is a measurement that depends almost entirely on the rover position and geometry. A reference satellite is chosen *per constellation* (GPS, Galileo, BeiDou, QZSS, ...), typically the one with a high elevation angle and strong signal strength.
 
 For carrier-phase observations, the double-difference of the phase measurement $\Phi$ is:
 
@@ -48,19 +48,31 @@ For each satellite pair, the user adds a **pseudorange factor** and a **carrier-
 * **Lever‑arm** (`DoubleDifferencePseudorangeFactorArm`, `DoubleDifferenceCarrierPhaseFactorArm`) take a `Pose3` in the navigation frame plus a body-frame lever arm, computing the antenna position internally. These are essential for tightly-coupled IMU fusion, where the optimized state is the vehicle pose.
 {: style="text-align: left"}
 
-A shared helper, `gnss::DoubleDifferenceData`, bundles the rover/base observations and satellite positions for a given satellite pair and provides the Sagnac-corrected geometric range model with Jacobians. This keeps the individual factors thin: the pseudorange factor simply evaluates the model-minus-observation residual, and the carrier-phase factor adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ ambiguity term on top.
+A shared helper, `gnss::DoubleDifferenceData`, bundles the rover/base observations and satellite positions for a given satellite pair and provides the Sagnac-corrected geometric range model $\Delta\nabla\rho(\cdot)$ with Jacobians. This keeps the individual factors thin. The **pseudorange factor** is *unary* in the rover antenna position $\mathbf{x}$ and simply evaluates the model-minus-observation residual:
+
+$$
+e_P(\mathbf{x}) = \Delta\nabla\rho(\mathbf{x}) - \Delta\nabla\tilde{P}
+$$
+
+The **carrier-phase factor** is *ternary*, connecting the rover position $\mathbf{x}$ to the two satellite ambiguities $N_\text{ref}$ and $N_\text{target}$, and adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ term on top:
+
+$$
+e_\Phi(\mathbf{x}, N_\text{ref}, N_\text{target}) = \Delta\nabla\rho(\mathbf{x}) + \lambda \cdot (N_\text{ref} - N_\text{target}) - \Delta\nabla\tilde{\Phi}
+$$
+
+where $\Delta\nabla\tilde{P}$ and $\Delta\nabla\tilde{\Phi}$ are the double-differenced pseudorange and carrier-phase observations. For the lever-arm variants the state $\mathbf{x}$ is a `Pose3` and the antenna position is obtained from the pose and body-frame lever arm before the same residual is evaluated.
 
 GTSAM treats each $N$ as a continuous variable during optimization (the "float" solution). Integer fixing is done outside the graph: at each epoch the float estimates and covariance are handed to the LAMBDA algorithm, which searches for the most likely integer vector. Validated fixes are then enforced in one of two ways (fix-and-hold): either a tight prior factor is added on the corresponding $N$ variables, or the integer values are substituted as constants inside the carrier-phase factors so that $N$ no longer appears as a variable at all. A fixed ambiguity is held until a cycle slip on that satellite invalidates it, at which point the corresponding $N$ is reset and re-estimated as a float.
 
 ## Tightly-Coupled GNSS-IMU Factor Graph
 
-The diagram below illustrates how these factors fit into a factor graph for tightly-coupled GNSS-IMU positioning. At each epoch, the rover pose is connected to double-difference factors grouped by satellite. For each satellite, a pseudorange factor (red) and a carrier-phase factor (blue) enter as a pair. The carrier-phase factors additionally connect to ambiguity variables that persist across epochs. IMU pre-integration factors connect consecutive poses, bridging the gap when satellite signals are blocked.
+The diagram below illustrates how these factors fit into a factor graph for tightly-coupled GNSS-IMU positioning. At each epoch, one satellite per constellation serves as the reference, and a double difference is formed against every other (target) satellite. Each target contributes a pseudorange factor (red), which is unary on the pose, and a carrier-phase factor (blue), which additionally connects to two ambiguity variables: the shared reference-satellite ambiguity $N_\text{ref}$ and that target's own ambiguity $N_\text{target}$. All carrier-phase factors for the constellation therefore share the common $N_\text{ref}$, and every ambiguity variable persists across epochs. IMU pre-integration factors connect consecutive poses, bridging the gap when satellite signals are blocked.
 
 <figure class="center" style="width: 100%; max-width: 820px;">
   <img src="/assets/images/rtk-gnss/rtk-factor-graph.svg"
     alt="Factor graph for tightly-coupled GNSS-IMU positioning showing double-difference factors, ambiguity variables, and IMU factors."
     style="width: 100%;" />
-  <figcaption>Factor graph for tightly-coupled GNSS-IMU RTK positioning. For each satellite, the double-difference pseudorange factor (red) and carrier-phase factor (blue) form a pair. Carrier-phase factors connect to integer ambiguity variables that persist across epochs. IMU pre-integration factors (black) connect consecutive poses. The ambiguity variables <em>N</em> are estimated as floats inside the graph and snapped to integers by LAMBDA outside the graph; once fixed they are either constrained with a tight prior or substituted as constants in the carrier-phase factors.</figcaption>
+  <figcaption>Factor graph for tightly-coupled GNSS-IMU RTK positioning. One reference satellite is shared; each target satellite contributes a unary DD pseudorange factor (red) and a DD carrier-phase factor (blue). Every carrier-phase factor connects to the pose and to two ambiguity variables — the shared reference ambiguity <em>N</em><sub>ref</sub> and that target's ambiguity (<em>N</em><sub>tgt1</sub>, <em>N</em><sub>tgt2</sub>) — which persist across epochs. IMU pre-integration factors (black) connect consecutive poses. The ambiguity variables are estimated as floats inside the graph and snapped to integers by LAMBDA outside the graph; once fixed they are either constrained with a tight prior or substituted as constants in the carrier-phase factors.</figcaption>
 </figure>
 <br />
 
