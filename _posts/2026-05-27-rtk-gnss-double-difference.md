@@ -66,13 +66,13 @@ GTSAM treats each $N$ as a continuous variable during optimization (the "float" 
 
 ## Tightly-Coupled GNSS-IMU Factor Graph
 
-The diagram below illustrates how these factors fit into a factor graph for tightly-coupled GNSS-IMU positioning. At each epoch, the rover pose is connected to double-difference factors grouped by satellite. For each satellite, a pseudorange factor (red) and a carrier-phase factor (blue) enter as a pair. The carrier-phase factors additionally connect to ambiguity variables that persist across epochs. IMU pre-integration factors connect consecutive poses, bridging the gap when satellite signals are blocked.
+The diagram below illustrates how these factors fit into a factor graph for tightly-coupled GNSS-IMU positioning. At each epoch, the rover pose is connected to a pair of double-difference factors per reference/target satellite pair: a pseudorange factor (red), which is unary on the pose, and a carrier-phase factor (blue), which additionally connects to *both* ambiguity variables of the pair — the reference-satellite ambiguity $N_\text{ref}$ and the target-satellite ambiguity $N_\text{target}$ — which persist across epochs. IMU pre-integration factors connect consecutive poses, bridging the gap when satellite signals are blocked.
 
 <figure class="center" style="width: 100%; max-width: 820px;">
   <img src="/assets/images/rtk-gnss/rtk-factor-graph.svg"
     alt="Factor graph for tightly-coupled GNSS-IMU positioning showing double-difference factors, ambiguity variables, and IMU factors."
     style="width: 100%;" />
-  <figcaption>Factor graph for tightly-coupled GNSS-IMU RTK positioning. For each satellite, the double-difference pseudorange factor (red) and carrier-phase factor (blue) form a pair. Carrier-phase factors connect to integer ambiguity variables that persist across epochs. IMU pre-integration factors (black) connect consecutive poses. The ambiguity variables <em>N</em> are estimated as floats inside the graph and snapped to integers by LAMBDA outside the graph; once fixed they are either constrained with a tight prior or substituted as constants in the carrier-phase factors.</figcaption>
+  <figcaption>Factor graph for tightly-coupled GNSS-IMU RTK positioning. For each reference/target satellite pair, the double-difference pseudorange factor (red, unary on the pose) and carrier-phase factor (blue) form a pair. Each carrier-phase factor connects to the pose <em>and</em> both ambiguity variables of the pair, <em>N</em><sub>ref</sub> and <em>N</em><sub>tgt</sub>, which persist across epochs. IMU pre-integration factors (black) connect consecutive poses. The ambiguity variables are estimated as floats inside the graph and snapped to integers by LAMBDA outside the graph; once fixed they are either constrained with a tight prior or substituted as constants in the carrier-phase factors.</figcaption>
 </figure>
 <br />
 
