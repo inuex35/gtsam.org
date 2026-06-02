@@ -92,7 +92,7 @@ This fits naturally with GTSAM's recent [QP and QCQP support]({% post_url 2026-0
 - [Frontiers of Optimization for Robotics workshop](https://sites.google.com/robotics.utias.utoronto.ca/icra26-frontiers-optimization/)
 - [Arxiv: Certifiable Factor Graph Optimization](https://arxiv.org/abs/2603.01267)
 - [OpenReview: Certifiable Factor Graph Optimization](https://openreview.net/forum?id=hAtI0KkdAg)
-- [Github:  The SLAM Handbook (Chapter 6)](https://github.com/SLAM-Handbook-contributors/slam-handbook-public-release/blob/main/main.pdf) 
+- [The SLAM Handbook (Chapter 6)](https://github.com/SLAM-Handbook-contributors/slam-handbook-public-release/blob/main/main.pdf) 
 - [Post: Certifiable Optimization at the ICRA Workshop]({% post_url 2026-06-01-icra-for-workshop %})
 - [Post: Quadratic Programs and QCQPs in GTSAM]({% post_url 2026-05-13-qp-qcqp-in-gtsam %})
 
