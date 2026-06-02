@@ -29,19 +29,19 @@ The standard pipeline treats the SDP machinery and the factor graph model as sep
 
 The reason is almost embarrassingly simple. The maximum likelihood problems we care about can be written as *quadratically-constrained quadratic programs* (QCQPs), and the factor graph structure of such a QCQP is encoded directly in the data matrices that define it: factor connectivity shows up as *block sparsity* in the objective matrices, and the product structure of the feasible set shows up as *block-diagonal* constraint matrices. The key point is that the *same data matrices* that define the original QCQP *also* define its Shor relaxation, as well as *every Burer-Monteiro factorization* of that relaxation. None of this structure is lost along the way!
 
-The consequence is that the Burer-Monteiro-factored Shor relaxation *automatically inherits* a factor graph structure from the original estimation problem. This induced factor graph has *identical connectivity* to the original; only the variables and factors themselves change. And these change in the simplest possible way: each is a one-to-one algebraic transformation — a *lift* — of its counterpart in the original factor graph. For example, a rotation variable lifts to a Stiefel-manifold variable, a unit vector lifts to a higher-dimensional unit vector, a translation lifts to a (higher-dimensional) translation, and the factors lift accordingly. We call the result a *lifted* (or *certifiable*) factor graph.
+The consequence is that the Burer-Monteiro-factored Shor relaxation *automatically inherits* a factor graph structure from the original estimation problem. This induced factor graph has *identical connectivity* to the original; only the variables and factors themselves change. And these change in the simplest possible way: each is a (slightly) higher-dimensional, one-to-one algebraic transformation — a *lift* — of its counterpart in the original factor graph. For example, a rotation variable lifts to a Stiefel-manifold variable, a unit vector lifts to a higher-dimensional unit vector, a translation lifts to a (higher-dimensional) translation, and the factors lift accordingly. We call the resulting factor graph a *lifted* (or *certifiable*) factor graph.
 
 <figure class="center" style="width: 100%;  text-align: left;">
   <img src="/assets/images/certifiable-factor-graphs/framework.png"
     alt="Framework diagram showing an input factor graph and QCQP lifted into a Burer-Monteiro factor graph inside a Riemannian Staircase."
     style="width: 100%; display: block; margin-left: auto; margin-right: auto;" />
-  <figcaption>The factor graph for the Burer-Monteiro-factored Shor relaxation has the same connectivity as the original QCQP's factor graph; only the variable and factor types change.</figcaption>
+  <figcaption>The factor graph for the Burer-Monteiro-factored Shor relaxation has the same connectivity as the original QCQP's factor graph; only the variable and factor types change, and these do so according to simple one-to-one algebraic transformations.</figcaption>
 </figure>
 <br />
 
 ## Certifiable estimation *is* factor graph optimization
 
-Because the lifted relaxation *is itself* a factor graph, the local optimizations inside the Riemannian Staircase can be carried out by an ordinary factor graph optimizer — exactly what GTSAM is built to do. Consequently, the Riemannian Staircase meta-algorithm for certifiable estimation collapses to a thin wrapper around standard local factor graph optimization:
+Because the Burer-Monteiro-factored Shor relaxation *is itself* a factor graph, the local optimizations appearing inside the Riemannian Staircase can be carried out by an ordinary factor graph optimizer — exactly what GTSAM is built to do. Consequently, the Riemannian Staircase meta-algorithm for certifiable estimation collapses to a thin wrapper around standard local factor graph optimization:
 
 ```
 Input: factor graph G for a QCQP-representable MLE problem
@@ -67,11 +67,11 @@ For anyone already comfortable with factor graphs, this turns certifiable estima
 
 We implemented our certifiable factor graph optimization framework in GTSAM and evaluated it on three problem classes — pose-graph optimization, landmark SLAM, and range-aided SLAM — across a broad set of standard benchmarks. Two findings stand out:
 
-It **matches purpose-built certifiable estimators.** Against the specialized, hand-engineered solvers SE-Sync, Landmark SE-Sync, and CORA, our general-purpose factor-graph estimator recovers the same objective values and the same certified suboptimality bounds — because it is solving the very same underlying relaxations.
+- It **matches purpose-built certifiable estimators.** Our general-purpose factor graph-based  estimator recovers the same objective values and the same certified suboptimality bounds as the specialized, hand-engineered solvers [SE-Sync](https://journals.sagepub.com/doi/10.1177/0278364918784361), [Landmark SE-Sync](https://ieeexplore.ieee.org/document/9143200), and [CORA](https://ieeexplore.ieee.org/document/10665918) — all because it is solving the very same underlying relaxations.
 
-It **preserves the speed of local factor graph optimization.** When the initialization is already good, the method terminates at the first level of the Staircase after a single local solve plus a cheap verification step, behaving just like ordinary factor graph optimization. It only invokes the full Staircase machinery when global optimality cannot be certified, and even then the cost scales roughly linearly in the number of levels.
+- It **preserves the speed of local factor graph optimization.** When the initialization is already good, the method terminates at the first level of the Staircase after a single local solve (plus a [cheap verification step](https://ieeexplore.ieee.org/document/9940527)), behaving just like ordinary factor graph optimization. It only invokes the full Staircase machinery when global optimality cannot be certified, and even then the cost scales roughly linearly in the number of levels.
 
-<figure class="center" style="width: 100%; max-width: 980px; text-align: center;">
+<figure class="center" style="width: 100%; max-width: 980px; text-align: left;">
   <img src="/assets/images/certifiable-factor-graphs/benchmarks.png"
     alt="Globally optimal solutions for pose graph optimization, landmark SLAM, and range-aided SLAM benchmarks."
     style="width: 100%; display: block; margin-left: auto; margin-right: auto;" />
@@ -79,19 +79,20 @@ It **preserves the speed of local factor graph optimization.** When the initiali
 </figure>
 <br />
 
-In short, you get the global-optimality guarantees of a specialized certifiable estimator at essentially the cost of a standard local solve — and the development effort drops from the *weeks-to-months* of the bespoke pipeline to a *few hours* of modeling.
+In short, you get the global-optimality guarantees of a specialized certifiable estimator at essentially the cost of a standard local solve — and the development effort drops from the *weeks-to-months* of the bespoke pipeline to a *few hours* of modeling with standard GTSAM factor graphs.
 
 ## Why this matters for GTSAM
 
-Certifiable factor graph optimization provides a path for bringing certifiable estimation into the software stack roboticists already use. Instead of choosing between a convenient local factor graph model and a separate bespoke certifiable solver, the same model can now support both fast local optimization *and* global optimality guarantees.
+Certifiable factor graph optimization provides a path for bringing certifiable estimation into the software stack roboticists already use. Instead of choosing between a convenient local factor graph model and a separate bespoke certifiable solver, the same model can now support *both* fast local optimization *and* global optimality guarantees.
 
 This fits naturally with GTSAM's recent [QP and QCQP support]({% post_url 2026-05-13-qp-qcqp-in-gtsam %}). QCQPs provide the algebraic bridge from factor graph estimation problems to semidefinite relaxations, while GTSAM already provides the factor graph abstraction, sparse optimization machinery, and many of the variable and factor types used in robotics. Our implementation in the paper is built in C++ using GTSAM, and the broader goal is to make certifiable estimation a reusable part of the factor graph workflow rather than a separate custom project for each new problem.
 
 ## Further browsing
 
 - [Frontiers of Optimization for Robotics workshop](https://sites.google.com/robotics.utias.utoronto.ca/icra26-frontiers-optimization/)
-- [OpenReview: Certifiable Factor Graph Optimization](https://openreview.net/forum?id=hAtI0KkdAg)
 - [Arxiv: Certifiable Factor Graph Optimization](https://arxiv.org/abs/2603.01267)
+- [OpenReview: Certifiable Factor Graph Optimization](https://openreview.net/forum?id=hAtI0KkdAg)
+- [Github:  The SLAM Handbook (Chapter 6)](https://github.com/SLAM-Handbook-contributors/slam-handbook-public-release/blob/main/main.pdf) 
 - [Post: Certifiable Optimization at the ICRA Workshop]({% post_url 2026-06-01-icra-for-workshop %})
 - [Post: Quadratic Programs and QCQPs in GTSAM]({% post_url 2026-05-13-qp-qcqp-in-gtsam %})
 
