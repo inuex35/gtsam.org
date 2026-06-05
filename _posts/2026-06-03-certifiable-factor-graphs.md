@@ -1,6 +1,6 @@
 ---
 layout: gtsam-post
-title:  "Certifiable Factor Graph Optimization"
+title:  "Certifiable Optimization, Part 2: Certifiable Factor Graph Optimization"
 ---
 
 Author: [David M. Rosen](https://david-m-rosen.github.io/)

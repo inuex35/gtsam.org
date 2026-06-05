@@ -1,6 +1,6 @@
 ---
 layout: gtsam-post
-title:  "Certifiable Optimization at the ICRA Workshop"
+title:  "Certifiable Optimization, Part 1: Exploiting Chordal Sparsity with Bayes Trees"
 ---
 
 Author: [Frank Dellaert](https://dellaert.github.io/)
