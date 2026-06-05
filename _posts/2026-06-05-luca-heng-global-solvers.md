@@ -10,7 +10,7 @@ Author: [Frank Dellaert](https://dellaert.github.io/)
 
 This third and final ICRA-week post zooms out to the broader global-solvers ecosystem.
 [Part 1]({% post_url 2026-06-01-icra-for-workshop %}) focused on our chordal-sparsity work, which uses Bayes-tree structure to make SDP relaxations more scalable.
-[Part 2](% post_url 2026-06-03-certifiable-factor-graphs %) focused on David Rosen's group's [Certifiable Factor Graph Optimization](https://openreview.net/forum?id=hAtI0KkdAg), which approaches related factor-graph problems through Burer-Monteiro-style low-rank optimization.
+[Part 2]({% post_url 2026-06-03-certifiable-factor-graphs %}) focused on David Rosen's group's [Certifiable Factor Graph Optimization](https://openreview.net/forum?id=hAtI0KkdAg), which approaches related factor-graph problems through Burer-Monteiro-style low-rank optimization.
 But these are only two efforts in a broader push toward global solvers for 3D vision and robot perception, a lot of it started by Luca Carlone & collaborators over the last 10 years. At ICRA this year we were very fortunate to have a workshop keynote by Heng Yang, his former Ph.D. student and now a professor at Harvard:
 
 - [Scaling Semidefinite Relaxations for Robot Perception and Control](https://sites.google.com/robotics.utias.utoronto.ca/icra26-frontiers-optimization/schedule) at the [Frontiers of Optimization for Robotics workshop](https://sites.google.com/robotics.utias.utoronto.ca/icra26-frontiers-optimization/).
