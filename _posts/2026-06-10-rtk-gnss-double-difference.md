@@ -1,6 +1,6 @@
 ---
 layout: gtsam-post
-title:  "Centimeter-Level Positioning with GTSAM: Double-Difference Factors for RTK GNSS"
+title:  "Toward Centimeter-Level Positioning with GTSAM: Double-Difference Factors for RTK GNSS"
 ---
 
 Author: [Kosuke Inoue](https://github.com/inuex35), independent researcher
@@ -8,7 +8,7 @@ Author: [Kosuke Inoue](https://github.com/inuex35), independent researcher
 <!-- - TOC -->
 {:toc}
 
-Global Navigation Satellite System (GNSS) positioning is foundational to autonomous driving, surveying, and precision agriculture. Standard single-point positioning achieves meter-level accuracy, but many applications demand centimeters. Real-Time Kinematic (RTK) GNSS achieves this by exploiting **double-difference** observations that cancel out common-mode errors such as satellite clock biases and atmospheric delays.
+Global Navigation Satellite System (GNSS) positioning is foundational to autonomous driving, surveying, and precision agriculture. Standard single-point positioning achieves meter-level accuracy, but many applications need tighter estimates. Real-Time Kinematic (RTK) GNSS moves toward centimeter-level positioning by exploiting **double-difference** observations that cancel or reduce common-mode errors such as satellite clock biases and atmospheric delays.
 
 GTSAM now includes built-in double-difference factors for both pseudorange and carrier-phase observations, contributed in [PR #2502](https://github.com/borglab/gtsam/pull/2502). This post explains the technique, walks through the new factors, and shows how they enable tightly-coupled GNSS-IMU fusion via factor graphs.
 
@@ -42,11 +42,9 @@ where $\Phi$ is the carrier-phase observable in meters, $\lambda$ is the carrier
 
 GTSAM's `navigation` module now includes four double-difference factors along with shared helpers, all contributed in [PR #2502](https://github.com/borglab/gtsam/pull/2502).
 
-For each satellite pair, the user adds a **pseudorange factor** and a **carrier-phase factor** to the graph. The pseudorange factor is a unary factor on the rover position, while the carrier-phase factor additionally connects to ambiguity variables $N$ that persist across epochs (as long as no cycle slip occurs). Both come in two flavors:
+For each satellite pair, the user adds a **pseudorange factor** and a **carrier-phase factor** to the graph. The pseudorange factor is a unary factor on the rover position, while the carrier-phase factor additionally connects to ambiguity variables $N$ that persist across epochs (as long as no cycle slip occurs).
 
-* **Basic** (`DoubleDifferencePseudorangeFactor`, `DoubleDifferenceCarrierPhaseFactor`) take a `Point3` antenna position in ECEF directly.
-* **Lever‑arm** (`DoubleDifferencePseudorangeFactorArm`, `DoubleDifferenceCarrierPhaseFactorArm`) take a `Pose3` in the navigation frame plus a body-frame lever arm, computing the antenna position internally. These are essential for tightly-coupled IMU fusion, where the optimized state is the vehicle pose.
-{: style="text-align: left"}
+The basic factors, `DoubleDifferencePseudorangeFactor` and `DoubleDifferenceCarrierPhaseFactor`, take a `Point3` antenna position in ECEF directly. The lever-arm variants, `DoubleDifferencePseudorangeFactorArm` and `DoubleDifferenceCarrierPhaseFactorArm`, take a `Pose3` in the navigation frame plus a body-frame lever arm, computing the antenna position internally. These are essential for tightly-coupled IMU fusion, where the optimized state is the vehicle pose.
 
 A shared helper, `gnss::DoubleDifferenceData`, bundles the rover/base observations and satellite positions for a given satellite pair and provides the Sagnac-corrected geometric range model $\Delta\nabla\rho(\cdot)$ with Jacobians. This keeps the individual factors thin. The **pseudorange factor** is *unary* in the rover antenna position $\mathbf{x}$ and simply evaluates the model-minus-observation residual:
 
@@ -57,7 +55,12 @@ $$
 The **carrier-phase factor** is *ternary*, connecting the rover position $\mathbf{x}$ to the two satellite ambiguities $N_\text{ref}$ and $N_\text{target}$, and adds the $\lambda \cdot (N_\text{ref} - N_\text{target})$ term on top:
 
 $$
-e_\Phi(\mathbf{x}, N_\text{ref}, N_\text{target}) = \Delta\nabla\rho(\mathbf{x}) + \lambda \cdot (N_\text{ref} - N_\text{target}) - \Delta\nabla\tilde{\Phi}
+\begin{aligned}
+e_\Phi(\mathbf{x}, N_\text{ref}, N_\text{target})
+&= \Delta\nabla\rho(\mathbf{x})
+ + \lambda (N_\text{ref} - N_\text{target}) \\
+&\quad - \Delta\nabla\tilde{\Phi}
+\end{aligned}
 $$
 
 where $\Delta\nabla\tilde{P}$ and $\Delta\nabla\tilde{\Phi}$ are the double-differenced pseudorange and carrier-phase observations. For the lever-arm variants the state $\mathbf{x}$ is a `Pose3` and the antenna position is obtained from the pose and body-frame lever arm before the same residual is evaluated.
@@ -100,7 +103,7 @@ With GNSS and IMU alone, the estimate drifts during long GNSS outages (under ove
 
 ## Takeaway
 
-GTSAM now provides native support for RTK GNSS positioning through double-difference pseudorange and carrier-phase factors. These factors integrate naturally with the existing factor graph framework, enabling tightly-coupled multi-sensor fusion with IMU, wheel odometry, or any other GTSAM factor. The lever-arm variants make it straightforward to model the physical offset between the navigation state and the antenna position.
+GTSAM now provides native support for RTK GNSS double-difference pseudorange and carrier-phase factors, an important step toward centimeter-level positioning in full GNSS pipelines. These factors integrate naturally with the existing factor graph framework, enabling tightly-coupled multi-sensor fusion with IMU, wheel odometry, or any other GTSAM factor. The lever-arm variants make it straightforward to model the physical offset between the navigation state and the antenna position.
 
 ## Additional Reading
 
