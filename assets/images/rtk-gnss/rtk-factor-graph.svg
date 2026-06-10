@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 405" font-family="'Computer Modern', 'Latin Modern Math', 'STIX Two Math', serif">
+  <defs><style>
+    .var-node { fill: white; stroke: #333; stroke-width: 2; }
+    .dot-pr { fill: #c0392b; } .dot-cp { fill: #2471a3; } .dot-imu { fill: #333; }
+    .edge-cp { stroke: #2471a3; stroke-width: 1.4; fill: none; }
+    .edge-pr { stroke: #c0392b; stroke-width: 1.4; fill: none; }
+    .edge-imu { stroke: #333; stroke-width: 1.5; fill: none; }
+    .vartext { font-size: 20px; font-weight: bold; fill: #333; text-anchor: middle; dominant-baseline: central; }
+    .subtext { font-size: 12px; font-weight: bold; fill: #333; text-anchor: middle; dominant-baseline: central; }
+    .ann { font-size: 11px; fill: #888; text-anchor: middle; dominant-baseline: central; }
+    .legend-label { font-size: 11px; fill: #333; text-anchor: start; dominant-baseline: central; }
+  </style></defs>
+  <line x1="174" y1="62" x2="284" y2="62" class="edge-imu"/>
+  <circle cx="290" cy="62" r="5" class="dot-imu"/>
+  <line x1="296" y1="62" x2="406" y2="62" class="edge-imu"/>
+  <text x="290" y="45" class="ann">IMU</text>
+  <line x1="454" y1="62" x2="564" y2="62" class="edge-imu"/>
+  <circle cx="570" cy="62" r="5" class="dot-imu"/>
+  <line x1="576" y1="62" x2="686" y2="62" class="edge-imu"/>
+  <text x="570" y="45" class="ann">IMU</text>
+  <line x1="142" y1="84" x2="110" y2="156" class="edge-pr"/>
+  <line x1="142" y1="84" x2="128" y2="156" class="edge-pr"/>
+  <line x1="152" y1="84" x2="154" y2="156" class="edge-cp"/>
+  <line x1="154" y1="167" x2="430" y2="309" class="edge-cp"/>
+  <line x1="154" y1="167" x2="250" y2="309" class="edge-cp"/>
+  <line x1="158" y1="84" x2="174" y2="156" class="edge-cp"/>
+  <line x1="174" y1="167" x2="430" y2="309" class="edge-cp"/>
+  <line x1="174" y1="167" x2="620" y2="309" class="edge-cp"/>
+  <circle cx="110" cy="162" r="4.5" class="dot-pr"/>
+  <circle cx="128" cy="162" r="4.5" class="dot-pr"/>
+  <circle cx="154" cy="162" r="4.5" class="dot-cp"/>
+  <circle cx="174" cy="162" r="4.5" class="dot-cp"/>
+  <line x1="422" y1="84" x2="390" y2="156" class="edge-pr"/>
+  <line x1="422" y1="84" x2="408" y2="156" class="edge-pr"/>
+  <line x1="432" y1="84" x2="434" y2="156" class="edge-cp"/>
+  <line x1="434" y1="167" x2="430" y2="309" class="edge-cp"/>
+  <line x1="434" y1="167" x2="250" y2="309" class="edge-cp"/>
+  <line x1="438" y1="84" x2="454" y2="156" class="edge-cp"/>
+  <line x1="454" y1="167" x2="430" y2="309" class="edge-cp"/>
+  <line x1="454" y1="167" x2="620" y2="309" class="edge-cp"/>
+  <circle cx="390" cy="162" r="4.5" class="dot-pr"/>
+  <circle cx="408" cy="162" r="4.5" class="dot-pr"/>
+  <circle cx="434" cy="162" r="4.5" class="dot-cp"/>
+  <circle cx="454" cy="162" r="4.5" class="dot-cp"/>
+  <line x1="702" y1="84" x2="670" y2="156" class="edge-pr"/>
+  <line x1="702" y1="84" x2="688" y2="156" class="edge-pr"/>
+  <line x1="712" y1="84" x2="714" y2="156" class="edge-cp"/>
+  <line x1="714" y1="167" x2="430" y2="309" class="edge-cp"/>
+  <line x1="714" y1="167" x2="250" y2="309" class="edge-cp"/>
+  <line x1="718" y1="84" x2="734" y2="156" class="edge-cp"/>
+  <line x1="734" y1="167" x2="430" y2="309" class="edge-cp"/>
+  <line x1="734" y1="167" x2="620" y2="309" class="edge-cp"/>
+  <circle cx="670" cy="162" r="4.5" class="dot-pr"/>
+  <circle cx="688" cy="162" r="4.5" class="dot-pr"/>
+  <circle cx="714" cy="162" r="4.5" class="dot-cp"/>
+  <circle cx="734" cy="162" r="4.5" class="dot-cp"/>
+  <circle cx="150" cy="62" r="24" class="var-node"/>
+  <text x="150" y="58" class="vartext" font-style="italic">x</text>
+  <text x="163" y="73" class="subtext">0</text>
+  <circle cx="430" cy="62" r="24" class="var-node"/>
+  <text x="430" y="58" class="vartext" font-style="italic">x</text>
+  <text x="443" y="73" class="subtext">1</text>
+  <circle cx="710" cy="62" r="24" class="var-node"/>
+  <text x="710" y="58" class="vartext" font-style="italic">x</text>
+  <text x="723" y="73" class="subtext">2</text>
+  <circle cx="430" cy="335" r="26" class="var-node"/>
+  <text x="421" y="332" class="vartext" font-style="italic">N</text>
+  <text x="440" y="344" class="subtext">ref</text>
+  <circle cx="250" cy="335" r="26" class="var-node"/>
+  <text x="241" y="332" class="vartext" font-style="italic">N</text>
+  <text x="260" y="344" class="subtext">tgt1</text>
+  <circle cx="620" cy="335" r="26" class="var-node"/>
+  <text x="611" y="332" class="vartext" font-style="italic">N</text>
+  <text x="630" y="344" class="subtext">tgt2</text>
+  <text x="430" y="374" class="ann">reference sat</text>
+  <text x="250" y="374" class="ann">target sat 1</text>
+  <text x="620" y="374" class="ann">target sat 2</text>
+  <circle cx="20" cy="391" r="4.5" class="dot-pr"/>
+  <text x="30" y="391" class="legend-label">DD pseudorange (unary)</text>
+  <circle cx="210" cy="391" r="4.5" class="dot-cp"/>
+  <text x="220" y="391" class="legend-label">DD carrier phase</text>
+  <circle cx="360" cy="391" r="4.5" class="dot-imu"/>
+  <text x="370" y="391" class="legend-label">IMU</text>
+</svg>
